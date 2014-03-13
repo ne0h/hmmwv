@@ -1,4 +1,4 @@
-#include "../include/hmmwv/joystick.hpp"
+#include "hmmwv/joystick.hpp"
 
 Joystick::Joystick() {
 	SDL_Init(SDL_INIT_JOYSTICK);

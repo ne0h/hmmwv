@@ -1,8 +1,8 @@
-prefix=/home/ne0h/ros_workspace/devel
+prefix=/home/ne0h/git/hmmwv/src/ros_workspace/devel
 
 Name: hmmwv
 Description: Description of hmmwv
 Version: 0.0.1
-Cflags: -I/home/ne0h/ros_workspace/src/hmmwv/include
-Libs: -L/home/ne0h/ros_workspace/devel/lib 
+Cflags: 
+Libs: -L/home/ne0h/git/hmmwv/src/ros_workspace/devel/lib 
 Requires: 

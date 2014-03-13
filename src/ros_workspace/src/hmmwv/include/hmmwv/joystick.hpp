@@ -1,3 +1,6 @@
+#ifndef JOYSTICK_HPP
+#define JOYSTICK_HPP
+
 #include <SDL/SDL.h>
 #include <string>
 #include <vector>
@@ -15,5 +18,6 @@ public:
 private:
 	SDL_Joystick *m_joystick;
 	std::string m_name;
-
 };
+
+#endif

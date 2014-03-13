@@ -1,3 +1,6 @@
+#ifndef JOYSTICKEVENT_HPP
+#define JOYSTICKEVENT_HPP
+
 #include <vector>
 
 class JoystickEvent {
@@ -12,3 +15,5 @@ private:
 	std::vector<bool>  m_buttons;
 	std::vector<short> m_axis;
 };
+
+#endif
