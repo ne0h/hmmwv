@@ -4,9 +4,9 @@ Joystick::Joystick() {
 	SDL_Init(SDL_INIT_JOYSTICK);
 	int num_joysticks = SDL_NumJoysticks();
 
-	// take first device that realy apears to be a joystick
+	// take first device that appears to be a joystick
 	// and no strange vbox device for example...
-	// ...which means more than 2 axis
+	// ...which means more than 2 axes
 	for (int i = 0; i < num_joysticks; i++) {
 		SDL_Joystick *tmpStick = SDL_JoystickOpen(i);
 		if (SDL_JoystickNumAxes(tmpStick) > 2) {
