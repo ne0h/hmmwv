@@ -12,5 +12,5 @@ Build Workspace
 1. Run *roscore* and *turtlesim.sh*
 1. Enjoy!
 
-If you want to run a node from somewhere else than the roscore, you need to set *ROS_MASTER_URI=http://<host>:11311*.
+If you want to run a node from somewhere else than the roscore, you need to set *ROS_MASTER_URI=http://host:11311*.
 Take a look at *turtlesim.sh* and *hmmwv.sh* for increased convenience.
