@@ -1,4 +1,4 @@
-#include "gpio.hpp"
+#include "../include/hmmwv/gpio.hpp"
 
 using namespace std;
 
