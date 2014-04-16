@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 	Publisher pub;
 	
 	linear = angular = 0.0;
-	l_scale = a_scale = 5.0;
+	l_scale = a_scale = 1.0;
 	n.param("scale_angular", a_scale, a_scale);
   	n.param("scale_linear", l_scale, l_scale);
 
