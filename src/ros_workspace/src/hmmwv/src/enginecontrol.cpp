@@ -9,6 +9,8 @@
 using namespace ros;
 using namespace std;
 
+GPIO gpio;
+
 // engine left side
 
 void engine_left_forward(GPIO *gpio) {
@@ -49,6 +51,32 @@ void engine_right_stop(GPIO *gpio) {
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
 	ROS_INFO("linear: %f angular: %f", msg.linear.x, msg.angular.z);
+	
+	// drive forwards
+	if (msg.linear.x > 2.5) {
+		engine_left_forward(&gpio);
+		engine_right_forward(&gpio);
+		
+	// drive backward
+	} else if (msg.linear.x < -2.5) {
+		engine_left_backward(&gpio);
+		engine_right_backward(&gpio);
+		
+	// stop
+	} else if (msg.linear.x < 2.5 && msg.linear.x > 2.5) {
+		
+		// drive left
+		if (msg.angular.z > 2.5) {
+			engine_left_backward(&gpio);
+			engine_right_forward(&gpio);
+		} else if (msg.angular.z < -2.5) {
+			engine_left_forward(&gpio);
+			engine_right_backward(&gpio);
+		}
+	
+		engine_left_stop(&gpio);
+		engine_right_stop(&gpio);
+	}
 }
 
 int main(int argc, char **argv) {
