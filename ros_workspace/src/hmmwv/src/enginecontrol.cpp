@@ -1,4 +1,5 @@
 #include <string>
+#include <math.h>
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
@@ -18,18 +19,37 @@ Engine driveRight(&gpio, GPIO::P8_10, GPIO::P8_12, GPIO::P8_13);
 void velocityCallback(const geometry_msgs::Twist& msg) {
 	//ROS_INFO("%f", msg.linear.x);
 
+	// ================
+	// Car-like steering (rotate around inner wheel)
+	//double leftSpd = max(0.0, min(1.0, msg.linear.x * (1.0 + msg.angular.x)));
+	//double rightSpd = max(0.0, min(1.0, msg.linear.x * (1.0 - msg.angular.x)));
+	// ================
+
+	// ================
+	// Tank-like steering (rotate around vehicle center)
+	// First, set linear back/forward speed
+	double leftSpd = msg.linear.x;
+	double rightSpd = msg.linear.x;
+	// Second, add left/right speeds so that turning on the spot is possible
+	leftSpd += msg.angular.x;
+	rightSpd -= msg.angular.x;
+	// Normalize
+	leftSpd = min(0.0, max(1.0, leftSpd));
+	rightSpd = min(0.0, max(1.0, rightSpd));
+	// ================
+
 	if (msg.linear.x > .1) {
 		// drive forward
 		ROS_INFO("Forward");
-		driveLeft.setSpeed(Engine::BACKWARD, msg.linear.x);
-		driveRight.setSpeed(Engine::FORWARD, msg.linear.x);
+		driveLeft.setSpeed(Engine::BACKWARD, leftSpd);
+		driveRight.setSpeed(Engine::FORWARD, rightSpd);
 	}
 	else if (msg.linear.x < -.1) {
 		// drive backward
 		ROS_INFO("Backward");
 		// The speed value must be in range [0, 1]
-		driveLeft.setSpeed(Engine::FORWARD, msg.linear.x * -1.0);
-		driveRight.setSpeed(Engine::BACKWARD, msg.linear.x * -1.0);
+		driveLeft.setSpeed(Engine::FORWARD, leftSpd * -1.0);
+		driveRight.setSpeed(Engine::BACKWARD, rightSpd * -1.0);
 	}
 	else {
 		// stop
