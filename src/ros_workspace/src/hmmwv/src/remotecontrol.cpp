@@ -65,10 +65,11 @@ int main(int argc, char **argv) {
 		geometry_msgs::Twist twist;
 		twist.angular.z = a_scale * angular;
 		twist.linear.x = l_scale  * linear;
+		
 		if (dirty == true) {
       		pub.publish(twist);
       		dirty = false;
-    		}
+    	}
 	}
 
 	return 0;
