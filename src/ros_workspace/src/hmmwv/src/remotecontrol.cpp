@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 	// init sdl and connect to controller
 	Joystick joystick;
 	string name = joystick.getName();
-	ROS_INFO("Used controller: %s", name.c_str());
+	cout << "Used controller: " << name.c_str() << endl;
 	
 	// init ros
 	double linear, angular, l_scale, a_scale;
@@ -37,7 +37,6 @@ int main(int argc, char **argv) {
 
 	// startup key loop
 	// use button.0 to stop
-	bool dirty = false;
 	bool quit  = false;
 	while (!quit) {
 		linear = angular = 0.0;
@@ -53,23 +52,15 @@ int main(int argc, char **argv) {
 		if (buttons.at(0) == true)
 			quit = true;
 		
-		// check if there is an event
-		if (abs(axis.at(0)) - DEAD_ZONE > 0
-			|| abs(axis.at(1)) - DEAD_ZONE > 0)
-			dirty = true;
-		
 		// calcutelate position values
 		angular = (-1.0) * axis.at(0) / AXIS_MAX;	
 		linear  = (-1.0) * axis.at(1) / AXIS_MAX;
 			
 		geometry_msgs::Twist twist;
-		twist.angular.z = a_scale * angular;
-		twist.linear.x = l_scale  * linear;
+		twist.angular.z = angular;
+		twist.linear.x  = linear;
 		
-		if (dirty == true) {
-      		pub.publish(twist);
-      		dirty = false;
-    	}
+      	pub.publish(twist);
 	}
 
 	return 0;
