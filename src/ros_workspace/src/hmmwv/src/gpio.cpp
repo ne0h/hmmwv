@@ -1,5 +1,6 @@
 #include "../include/hmmwv/gpio.hpp"
 #include <cassert>
+#include <glob.h>
 
 using namespace std;
 
@@ -15,7 +16,26 @@ GPIO::GPIO() :
 	echo("/sys/devices/bone_capemgr.9/slots", "bone_pwm_P9_14");
 	//echo("/sys/devices/ocp.3/pwm_test_P9_14.19/period", PWM_PERIOD);
 	echo("/sys/devices/bone_capemgr.9/slots", "bone_pwm_P9_16");
-	echo("/sys/devices/ocp.3/pwm_test_P9_16.19/period", PWM_PERIOD);
+	//echo("/sys/devices/ocp.3/pwm_test_P9_16.19/period", PWM_PERIOD);
+
+	// Do not change the order of pins here. The PIN enum is used to access
+	// these paths, so their order is important.
+	cout << "Finding PWM pin paths:\n";
+	string path = matchPath("/sys/devices/ocp.*/pwm_test_P8_13.*/");
+	cout << path << endl;
+	_pwmPinPaths.push_back(path);
+	path = matchPath("/sys/devices/ocp.*/pwm_test_P8_19.*/");
+	cout << path << endl;
+	_pwmPinPaths.push_back(path);
+	path = matchPath("/sys/devices/ocp.*/pwm_test_P9_14.*/");
+	cout << path << endl;
+	_pwmPinPaths.push_back(path);
+	path = matchPath("/sys/devices/ocp.*/pwm_test_P9_16.*/");
+	cout << path << endl;
+	_pwmPinPaths.push_back(path);
+
+	// Set PWM period for both outputs
+	// TODO?
 }
 
 GPIO::~GPIO()
@@ -46,7 +66,7 @@ void GPIO::setPin(int pin, int value)
 }
 
 /* Duty cycle in percent */
-void GPIO::setPwm(const float dutyPerc)
+void GPIO::setPwm(const PIN pin, const float dutyPerc)
 {
 	/*
 	https://groups.google.com/forum/#!topic/beagleboard/qma8bMph0yM
@@ -65,11 +85,14 @@ void GPIO::setPwm(const float dutyPerc)
 	- P9,16: pwm_test_P9_16.17
 	*/
 
-	const int duty = (1.0 - dutyPerc) * (float)PWM_PERIOD;
-	cout << "duty: " << duty << endl;
+	assert(dutyPerc >= 0.0);
+	assert(dutyPerc <= 1.0);
 
+	// The beaglebone interprets duty == period as 0 V output and duty == 0 results in
+	// 3.3 V output, so we invert the value here to make 0 % duty correspond to 0 V output.
+	const int duty = (1.0 - dutyPerc) * (float)PWM_PERIOD;
 	int result = 0;
-	result = echo("/sys/devices/ocp.3/pwm_test_P9_16.19/duty", duty);
+	result = echo(append(_pwmPinPaths[pin], "duty"), duty);
 
 	if(result != 0) {
 		cout << "At least one echo failed\n";
@@ -78,8 +101,8 @@ void GPIO::setPwm(const float dutyPerc)
 
 bool GPIO::containsPin(int pin)
 {
-	for (vector<int>::iterator it = m_exportedPins.begin();
-			it != m_exportedPins.end(); it++) {
+	for (vector<int>::iterator it = _exportedPins.begin();
+			it != _exportedPins.end(); it++) {
 		if (*it == pin)
 			return true;
 	}
@@ -114,12 +137,12 @@ void GPIO::exportPin(int pin)
 	fwrite(&setValue, sizeof(char), 3, outputHandle);
 	fclose(outputHandle);
 	
-	m_exportedPins.push_back(pin);
+	_exportedPins.push_back(pin);
 }
 
-int GPIO::echo(const char *target, const int value)
+int GPIO::echo(const string target, const int value)
 {
-	ofstream file(target);
+	ofstream file(target.c_str());
 	if(!file) {
 		cerr << "Could not open " << target << endl;
 		return -1;
@@ -130,9 +153,9 @@ int GPIO::echo(const char *target, const int value)
 	return 0;
 }
 
-int GPIO::echo(const char *target, const char *value)
+int GPIO::echo(const string target, const char *value)
 {
-	ofstream file(target);
+	ofstream file(target.c_str());
 	if(!file) {
 		cerr << "Could not open " << target << endl;
 		return -1;
@@ -141,4 +164,36 @@ int GPIO::echo(const char *target, const char *value)
 	file << value;
 	file.close();
 	return 0;
+}
+
+string GPIO::matchPath(const std::string pattern)
+{
+
+	// Find the pwm pin paths (they change on every reboot...)
+	// int glob(const char *pattern, int flags,
+	//			int (*errfunc) (const char *epath, int eerrno),
+	//			glob_t *pglob);
+	glob_t foundPaths;
+	int result = glob(pattern.c_str(), GLOB_ERR | GLOB_MARK, NULL, &foundPaths);
+
+	switch(result) {
+	case 0:
+		if(foundPaths.gl_pathc != 1) {
+			cout << "Warning: PWM pin path pattern (tm) matched more than one path. Taking the first one.\n";
+		}
+		return string(foundPaths.gl_pathv[0]);
+	case GLOB_NOSPACE:
+		cerr << "Call to glob ran out of memory!\n";
+		break;
+	case GLOB_ABORTED:
+		cerr << "Glob encountered a read error (are we root?)\n";
+		break;
+	case GLOB_NOMATCH:
+		cerr << "Glob couldn't match a path\n";
+		break;
+	default:
+		cerr << "Unexpected glob error!\n";
+	}
+
+	return string();
 }
