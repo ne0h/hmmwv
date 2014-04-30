@@ -30,11 +30,11 @@ void Engine::start(const int direction, const float speed)
 		_lastDirection = direction;
 	}
 
-	if(direction == 0) {
-		// Ignore speed settings, we're not supposed to work anyway
-		_gpio->setPwm(_speedPin, 0.0);
+	if(direction != 0) {
+		_gpio->setPwm(_speedPin, speed);
 	}
 	else {
-		_gpio->setPwm(_speedPin, speed);
+		// Ignore speed settings, we're not supposed to work anyway
+		_gpio->setPwm(_speedPin, 0.0);
 	}
 }

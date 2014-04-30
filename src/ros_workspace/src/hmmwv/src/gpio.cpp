@@ -1,6 +1,7 @@
 #include "../include/hmmwv/gpio.hpp"
 #include <cassert>
 #include <glob.h>
+#include <sstream>
 
 using namespace std;
 
@@ -39,26 +40,18 @@ GPIO::~GPIO()
 
 }
 
-void GPIO::setPin(int pin, int value)
+void GPIO::setPin(const Pin pin, const bool value)
 {
+	assert(value == 0 || value == 1);
 
 	// already exported?
 	if (!containsPin(pin))
 		exportPin(pin);
 	
-	// set pin
-	FILE *outputHandle = NULL;
-	char setValue[4], GPIOValue[64];
-	
-	sprintf(GPIOValue, "/sys/class/gpio/gpio%d/value", pin);
-	if ((outputHandle = fopen(GPIOValue, "rb+")) == NULL) {
-		perror("Failed to open value handle");
-		exit(EXIT_FAILURE);
-	}
-	
-	sprintf(setValue, "%d", value);
-	fwrite(&setValue, sizeof(char), 1, outputHandle);
-	fclose(outputHandle);
+	stringstream ss;
+	ss << "/sys/class/gpio/gpio" << pin << "/value";
+	string pinPath = ss.str();
+	echo(pinPath, value);
 }
 
 /* Duty cycle in percent */
@@ -75,10 +68,6 @@ void GPIO::setPwm(const PwmPin pin, const float dutyPerc)
 	echo bone_pwm_P9_14 > /sys/devices/bone_capemgr.9/slots
 	echo 500 > /sys/devices/ocp.2/pwm_test_P9_14.16/period
 	echo 250 > /sys/devices/ocp.2/pwm_test_P9_14.16/duty
-
-	Folders in /sys/devices/ocp.3/
-	- P9,14: pwm_test_P9_14.16
-	- P9,16: pwm_test_P9_16.17
 	*/
 
 	assert(dutyPerc >= 0.0);
@@ -95,7 +84,7 @@ void GPIO::setPwm(const PwmPin pin, const float dutyPerc)
 	}
 }
 
-bool GPIO::containsPin(int pin)
+bool GPIO::containsPin(const Pin pin)
 {
 	for (vector<int>::iterator it = _exportedPins.begin();
 			it != _exportedPins.end(); it++) {
@@ -106,32 +95,22 @@ bool GPIO::containsPin(int pin)
 	return false;
 }
 
-void GPIO::exportPin(int pin)
+void GPIO::exportPin(const Pin pin)
 {
-	FILE *outputHandle = NULL;
-  	char setValue[4], GPIOString[4], GPIOValue[64], GPIODirection[64];
-	
-	sprintf(GPIOString, "%d", pin);
-  	sprintf(GPIOValue, "/sys/class/gpio/gpio%d/value", pin);
-  	sprintf(GPIODirection, "/sys/class/gpio/gpio%d/direction", pin);
+	// Construct the base path to the pin
+	stringstream ss;
+  	ss << "/sys/class/gpio/gpio" << pin << "/";
+  	string basePath = ss.str();
   	
-  	if ((outputHandle = fopen("/sys/class/gpio/export", "ab")) == NULL) {
-    	perror("Failed to export pin");
-    	exit(EXIT_FAILURE);
-  	}
+  	echo("/sys/class/gpio/export", pin);
+  	echo(append(basePath, "direction"), "out");
 
-	strcpy(setValue, GPIOString);
-	fwrite(&setValue, sizeof(char), 2, outputHandle);
-	fclose(outputHandle);
-	
-	if ((outputHandle = fopen(GPIODirection, "rb+")) == NULL) {
-		perror("Failed to open direction handle");
-		exit(EXIT_FAILURE);
-	}
-	
-	strcpy(setValue, "out");
-	fwrite(&setValue, sizeof(char), 3, outputHandle);
-	fclose(outputHandle);
+// WTF?
+
+	/*strcpy(setValue, GPIOString);
+	if(fwrite(&setValue, sizeof(char), 2, outputHandle) == -1)
+		cerr << "kaputt\n";
+	fclose(outputHandle);*/
 	
 	_exportedPins.push_back(pin);
 }

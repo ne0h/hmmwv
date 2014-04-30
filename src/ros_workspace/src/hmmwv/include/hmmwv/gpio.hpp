@@ -30,12 +30,12 @@ public:
 	GPIO();
 	~GPIO();
 	
-	void setPin(const int pin, int value);
+	void setPin(const Pin pin, const bool value);
 	void setPwm(const PwmPin pin, const float duty);
 	
 private:
-	bool containsPin(int pin);
-	void exportPin(int pin);
+	bool containsPin(const Pin pin);
+	void exportPin(const Pin pin);
 	int echo(const std::string target, const int value);
 	int echo(const std::string target, const char *value);
 	std::string matchPath(std::string pattern);
