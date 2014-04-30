@@ -123,6 +123,7 @@ target_link_libraries(remotecontrol ${catkin_LIBRARIES} SDL)
 add_executable(enginecontrol
 	src/enginecontrol.cpp
 	src/gpio.cpp
+	src/engine.cpp
 )
 target_link_libraries(enginecontrol ${catkin_LIBRARIES})
 

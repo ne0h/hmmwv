@@ -10,13 +10,9 @@ GPIO::GPIO() :
 	// Enable the pwm pins
 	echo("/sys/devices/bone_capemgr.9/slots", "am33xx_pwm");
 	echo("/sys/devices/bone_capemgr.9/slots", "bone_pwm_P8_13");
-	//echo("/sys/devices/ocp.3/pwm_test_P8_13.19/period", PWM_PERIOD);
 	echo("/sys/devices/bone_capemgr.9/slots", "bone_pwm_P8_19");
-	//echo("/sys/devices/ocp.3/pwm_test_P8_19.19/period", PWM_PERIOD);
 	echo("/sys/devices/bone_capemgr.9/slots", "bone_pwm_P9_14");
-	//echo("/sys/devices/ocp.3/pwm_test_P9_14.19/period", PWM_PERIOD);
 	echo("/sys/devices/bone_capemgr.9/slots", "bone_pwm_P9_16");
-	//echo("/sys/devices/ocp.3/pwm_test_P9_16.19/period", PWM_PERIOD);
 
 	// Do not change the order of pins here. The PIN enum is used to access
 	// these paths, so their order is important.
@@ -66,7 +62,7 @@ void GPIO::setPin(int pin, int value)
 }
 
 /* Duty cycle in percent */
-void GPIO::setPwm(const PIN pin, const float dutyPerc)
+void GPIO::setPwm(const PwmPin pin, const float dutyPerc)
 {
 	/*
 	https://groups.google.com/forum/#!topic/beagleboard/qma8bMph0yM
