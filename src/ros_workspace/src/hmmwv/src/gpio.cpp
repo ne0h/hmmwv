@@ -5,15 +5,18 @@
 
 using namespace std;
 
-GPIO::GPIO() {
-	vector<int> m_exportedPins;
+GPIO::GPIO() :
+	PWM_PERIOD(500000) // nanoseconds = 2000 Hz
+{
 }
 
-GPIO::~GPIO() {
+GPIO::~GPIO()
+{
 
 }
 
-void GPIO::setPin(int pin, int value) {
+void GPIO::setPin(int pin, int value)
+{
 
 	// already exported?
 	if (!containsPin(pin))
@@ -62,7 +65,8 @@ void GPIO::startPwm(const int duty) {
 	}
 }
 
-bool GPIO::containsPin(int pin) {
+bool GPIO::containsPin(int pin)
+{
 	for (vector<int>::iterator it = m_exportedPins.begin();
 			it != m_exportedPins.end(); it++) {
 		if (*it == pin)
@@ -72,7 +76,8 @@ bool GPIO::containsPin(int pin) {
 	return false;
 }
 
-void GPIO::exportPin(int pin) {
+void GPIO::exportPin(int pin)
+{
 	FILE *outputHandle = NULL;
   	char setValue[4], GPIOString[4], GPIOValue[64], GPIODirection[64];
 	
@@ -109,12 +114,14 @@ int GPIO::echo(const char *target, const unsigned short value) {
 	return echo(target, strValue);
 }
 
-int GPIO::echo(const char *target, const char *value) {
+int GPIO::echo(const char *target, const char *value)
+{
 	ofstream file(target);
 	if(!file) {
-		cerr << "Could not open " << target;
+		cerr << "Could not open " << target << endl;
 		return -1;
 	}
+
 	file << value;
 	file.close();
 	return 0;

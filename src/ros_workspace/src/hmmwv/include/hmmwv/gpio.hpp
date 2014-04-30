@@ -8,8 +8,11 @@
 #include <string.h>
 #include <unistd.h>
 
-class GPIO {
+class GPIO
+{
 public:
+	const unsigned int PWM_PERIOD;
+
 	GPIO();
 	~GPIO();
 	
@@ -22,7 +25,7 @@ private:
 	int echo(const char *target, const unsigned short value);
 	int echo(const char *target, const char *value);
 
-	std::vector<int> m_exportedPins;
+	std::vector<int> _exportedPins;
 
 };
 
