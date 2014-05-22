@@ -23,8 +23,16 @@ public:
 	enum Pin {
 		P8_10 = 68, // int values are pin indices in sysfs
 		P8_12 = 44,
+		P8_15 = 47,
+		P8_17 = 27,
+		P9_17 = 4,
+		P9_18 = 5,
 		P9_21 = 3,
-		P9_22 = 2
+		P9_23 = 49,
+		P9_24 = 15,
+		P9_26 = 14,
+		P9_41 = 20,
+		P9_42 = 7
 	};
 
 	GPIO();

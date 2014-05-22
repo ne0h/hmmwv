@@ -10,6 +10,7 @@ Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionP
 	_lastDirection(0)
 {
 	gpio->setPin(_enablePin, 1);
+	gpio->setPwm(_speedPin, 0.0);
 }
 
 Engine::~Engine() {}

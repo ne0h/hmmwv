@@ -1,3 +1,6 @@
+#ifndef ENGINE_HPP
+#define ENGINE_HPP
+
 #include "gpio.hpp"
 
 class Engine
@@ -19,3 +22,5 @@ private:
 	const GPIO::PwmPin _speedPin;
 	int _lastDirection;
 };
+
+#endif
