@@ -17,6 +17,7 @@ For orientation and path-finding HMMWV has a lidar system from Sick (LMS 100) wh
 
 As CPU HMMWV uses an ARM based singe-board computer from Texas Instruments (Beaglebone Black). Due to the fact that a two dimensional cross section of the environment is not enough to get orientation in a three dimensional room, we put the Sensor on a slow rotating platform, which gives us the opportunity to calculate an three dimensional picture of the robot’s surrounding area.
 
+If you want to see images please click on the images folder.
 ### Actual project status
 
 * The chassis of HMMWV is built 
