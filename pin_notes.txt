@@ -1,10 +1,12 @@
 Fahrmotor links
 P8_10 (Enable)
 P8_12 (Direction)
+P8_13 (Speed)
 
 Fahrmotor rechts
-P9_22 -> P9_23 (Enable)
+P9_23 (Enable)
 P9_21 (Direction)
+P9_14 (Speed)
 
 Kippmotor links
 P8_39 -> P8_17 (Enable)
