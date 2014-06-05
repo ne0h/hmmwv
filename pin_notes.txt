@@ -1,23 +1,18 @@
 Fahrmotor links
-P8_10 (Enable) (tut)
-P8_12 (Direction) arsch (tut am beagle) - repariert
+P8_10 (Enable)
+P8_12 (Direction)
 
 Fahrmotor rechts
-P9_21 (Direction) (tut)
-
-Änderungen
-==========
-
-Fahrmotor rechts
-P9_22 -> P9_23 (Enable) (tut)
+P9_22 -> P9_23 (Enable)
+P9_21 (Direction)
 
 Kippmotor links
-P8_39 -> P8_17 (Enable) (tut)
-P8_35 -> P8_15 (Direction) (tut)
+P8_39 -> P8_17 (Enable)
+P8_35 -> P8_15 (Direction)
 
 Kippmotor rechts
-P9_29 -> P9_26 (Enable) (tut)
-P9_31 -> P9_24 (Direction) (tut)
+P9_29 -> P9_26 (Enable)
+P9_31 -> P9_24 (Direction)
 
 Putt:
 P9_17
