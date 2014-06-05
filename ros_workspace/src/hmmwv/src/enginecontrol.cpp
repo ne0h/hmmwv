@@ -22,13 +22,13 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	if (msg.linear.x > .1) {
 		// drive forward
 		ROS_INFO("Forward");
-		driveLeft.start(1, msg.linear.x);
+		driveLeft.start(-1, msg.linear.x);
 		driveRight.start(-1, msg.linear.x);
 	}
 	else if (msg.linear.x < -.1) {
-		ROS_INFO("Backward");
 		// drive backward
-		driveLeft.start(-1, msg.linear.x * -1.0); // The speed value must be in range [0, 1]
+		ROS_INFO("Backward");
+		driveLeft.start(1, msg.linear.x * -1.0); // The speed value must be in range [0, 1]
 		driveRight.start(1, msg.linear.x * -1.0);
 	}
 	else {
@@ -39,8 +39,8 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 }
 
 int main(int argc, char **argv) {
-	driveLeft.start(0);
-	driveRight.start(0);
+	//driveLeft.start(0); // Why were we doing that? oO
+	//driveRight.start(0);
 
 	// init ros
 	init(argc, argv, "enginecontrol");
