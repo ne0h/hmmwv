@@ -17,17 +17,19 @@ Engine driveRight(&gpio, GPIO::P9_23, GPIO::P9_21, GPIO::P9_14);
 //Engine rotatorRight(..);
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
-	ROS_INFO("%f", msg.linear.x);
+	//ROS_INFO("%f", msg.linear.x);
 
 	if (msg.linear.x > .1) {
 		// drive forward
-		driveLeft.start(-1, msg.linear.x);
-		driveRight.start(1, msg.linear.x);
-	}
-	else if (msg.linear.x < -.1) {
-		// drive backward
+		ROS_INFO("Forward");
 		driveLeft.start(1, msg.linear.x);
 		driveRight.start(-1, msg.linear.x);
+	}
+	else if (msg.linear.x < -.1) {
+		ROS_INFO("Backward");
+		// drive backward
+		driveLeft.start(-1, msg.linear.x * -1.0); // The speed value must be in range [0, 1]
+		driveRight.start(1, msg.linear.x * -1.0);
 	}
 	else {
 		// stop
