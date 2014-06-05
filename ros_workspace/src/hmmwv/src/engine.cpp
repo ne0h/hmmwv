@@ -12,7 +12,6 @@ Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionP
 	gpio->setPin(_enablePin, 0); // Disable first to avoid epileptic motors
 	gpio->setPwm(_speedPin, 0.0);
 	gpio->setPin(_directionPin, 1);
-	gpio->setPin(_enablePin, 1);
 }
 
 Engine::~Engine() {}
@@ -24,9 +23,11 @@ void Engine::start(const int direction, const float speed)
 
 	if(direction != _lastDirection) {
 		if(direction == -1) {
+			_gpio->setPin(_enablePin, 1);
 			_gpio->setPin(_directionPin, 0);
 		}
 		else if(direction == 1) {
+			_gpio->setPin(_enablePin, 1);
 			_gpio->setPin(_directionPin, direction);
 		}
 
@@ -39,5 +40,6 @@ void Engine::start(const int direction, const float speed)
 	else {
 		// Ignore speed settings, we're not supposed to work anyway
 		_gpio->setPwm(_speedPin, 0.0);
+		_gpio->setPin(_enablePin, 0);
 	}
 }
