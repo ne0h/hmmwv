@@ -1,4 +1,5 @@
 #include <cassert>
+#include <stdio.h>
 #include "../include/hmmwv/engine.hpp"
 
 Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionPin,
@@ -19,7 +20,10 @@ Engine::~Engine() {}
 void Engine::start(const int direction, const float speed)
 {
 	assert(direction == -1 || direction == 0 || direction == 1);
-	assert(speed >= 0.0 && speed <= 1.0);
+	if(!(speed >= 0.0 && speed <= 1.0)) {
+		printf("invalid speed: %f", speed);
+		assert(false);
+	}
 
 	if(direction != _lastDirection) {
 		if(direction == -1) {
