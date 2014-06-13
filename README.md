@@ -42,3 +42,13 @@ Build Workspace
 
 If you want to run a node from somewhere else than the roscore, you need to set *ROS_MASTER_URI=http://host:11311*.
 Take a look at *turtlesim.sh* and *hmmwv.sh* for increased convenience.
+
+Startup Instructions for non-techies
+------------------------------------
+
+1. SSH into the beagle
+1. cd hmmwv
+1. roscore &
+1. ./remote.sh &
+1. sudo su
+1. ./engine.sh
