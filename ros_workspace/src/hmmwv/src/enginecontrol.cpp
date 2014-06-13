@@ -23,13 +23,13 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 		// drive forward
 		ROS_INFO("Forward");
 		driveLeft.start(-1, msg.linear.x);
-		driveRight.start(-1, msg.linear.x);
+		driveRight.start(1, msg.linear.x);
 	}
 	else if (msg.linear.x < -.1) {
 		// drive backward
 		ROS_INFO("Backward");
 		driveLeft.start(1, msg.linear.x * -1.0); // The speed value must be in range [0, 1]
-		driveRight.start(1, msg.linear.x * -1.0);
+		driveRight.start(-1, msg.linear.x * -1.0);
 	}
 	else {
 		// stop
@@ -42,9 +42,13 @@ int main(int argc, char **argv) {
 	//driveLeft.start(0); // Why were we doing that? oO
 	//driveRight.start(0);
 
+	// Set reasonable defaults for not actively used pins
+	gpio.setPin(GPIO::P8_8, false);
+
 	// init ros
 	init(argc, argv, "enginecontrol");
 	NodeHandle n;
+	// This is correct - we're borrowing the turtle's topics
 	Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
 	ROS_INFO("enginecontrol up and running.");
 	
