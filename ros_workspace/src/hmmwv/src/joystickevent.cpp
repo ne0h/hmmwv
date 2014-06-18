@@ -1,4 +1,4 @@
-#include "hmmwv/joystickevent.hpp"
+#include "joystickevent.hpp"
 
 JoystickEvent::JoystickEvent(std::vector<bool> buttons,
 		std::vector<short> axis)

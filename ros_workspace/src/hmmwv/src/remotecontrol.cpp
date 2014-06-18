@@ -6,7 +6,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 
-#include "hmmwv/joystick.hpp"
+#include "joystick.hpp"
 
 #define DEAD_ZONE 16384
 #define AXIS_MAX  32767

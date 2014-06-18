@@ -3,8 +3,8 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 
-#include "../include/hmmwv/gpio.hpp"
-#include "../include/hmmwv/engine.hpp"
+#include "gpio.hpp"
+#include "engine.hpp"
 
 using namespace ros;
 using namespace std;

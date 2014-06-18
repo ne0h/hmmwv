@@ -1,6 +1,6 @@
 #include <cassert>
 #include <stdio.h>
-#include "../include/hmmwv/engine.hpp"
+#include "engine.hpp"
 
 Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionPin,
 	const GPIO::PwmPin speedPin) :
