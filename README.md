@@ -52,3 +52,19 @@ Startup Instructions for non-techies
 1. ./remote.sh &
 1. sudo su
 1. ./engine.sh
+
+BBB GPIO Zen
+------------
+
+In the following, $pin refers to pin numbers as used by the kernel. Mappings for the pins we use are available in the `Pin` enum in gpio.h.
+
+Each used pin must be exported before first usage and it's direction needs to be set (in/out):
+```
+echo $pin > /sys/class/gpio/export
+echo "out" > /sys/class/gpio/gpio/$pin/direction
+```
+Now the pin value (binary) can be set arbitrarily:
+```
+echo 1 > /sys/class/gpio/gpio/$pin/value
+echo 0 > /sys/class/gpio/gpio/$pin/value
+```
