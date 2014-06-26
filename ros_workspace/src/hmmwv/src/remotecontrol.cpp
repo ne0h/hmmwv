@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 		if (buttons.at(0) == true)
 			quit = true;
 		
-		// calcutelate position values
+		// calculate position values
 		angular = (-1.0) * axis.at(0) / AXIS_MAX;	
 		linear  = (-1.0) * axis.at(1) / AXIS_MAX;
 

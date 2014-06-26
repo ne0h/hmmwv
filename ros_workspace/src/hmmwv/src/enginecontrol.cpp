@@ -28,7 +28,8 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	else if (msg.linear.x < -.1) {
 		// drive backward
 		ROS_INFO("Backward");
-		driveLeft.setSpeed(Engine::FORWARD, msg.linear.x * -1.0); // The speed value must be in range [0, 1]
+		// The speed value must be in range [0, 1]
+		driveLeft.setSpeed(Engine::FORWARD, msg.linear.x * -1.0);
 		driveRight.setSpeed(Engine::BACKWARD, msg.linear.x * -1.0);
 	}
 	else {
