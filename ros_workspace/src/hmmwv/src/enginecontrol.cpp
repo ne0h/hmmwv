@@ -22,19 +22,19 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	if (msg.linear.x > .1) {
 		// drive forward
 		ROS_INFO("Forward");
-		driveLeft.start(-1, msg.linear.x);
-		driveRight.start(1, msg.linear.x);
+		driveLeft.setSpeed(Engine::BACKWARD, msg.linear.x);
+		driveRight.setSpeed(Engine::FORWARD, msg.linear.x);
 	}
 	else if (msg.linear.x < -.1) {
 		// drive backward
 		ROS_INFO("Backward");
-		driveLeft.start(1, msg.linear.x * -1.0); // The speed value must be in range [0, 1]
-		driveRight.start(-1, msg.linear.x * -1.0);
+		driveLeft.setSpeed(Engine::FORWARD, msg.linear.x * -1.0); // The speed value must be in range [0, 1]
+		driveRight.setSpeed(Engine::BACKWARD, msg.linear.x * -1.0);
 	}
 	else {
 		// stop
-		driveLeft.start(0);
-		driveRight.start(0);
+		driveLeft.setSpeed(Engine::STOP);
+		driveRight.setSpeed(Engine::STOP);
 	}
 }
 

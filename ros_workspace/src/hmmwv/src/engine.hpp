@@ -6,6 +6,14 @@
 class Engine
 {
 public:
+	enum Direction {
+		// Describes the *motor's* rotation direction, not the
+		// robot's movement direction!
+		FORWARD,
+		STOP,
+		BACKWARD
+	}
+
 	Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionPin,
 		const GPIO::PwmPin speedPin);
 	~Engine();
@@ -13,7 +21,7 @@ public:
 	/**
 	* @brief here be docs
 	*/
-	void start(const int direction, const float speed = 0.0f);
+	void setSpeed(const Direction direction, const float speed = 0.0f);
 
 private:
 	GPIO *_gpio;

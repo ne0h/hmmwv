@@ -17,33 +17,29 @@ Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionP
 
 Engine::~Engine() {}
 
-void Engine::start(const int direction, const float speed)
+void Engine::setSpeed(const Direction direction, const float speed)
 {
-	assert(direction == -1 || direction == 0 || direction == 1);
-	if(!(speed >= 0.0 && speed <= 1.0)) {
+	if(speed < 0.0 || speed > 1.0)) {
 		printf("invalid speed: %f", speed);
 		assert(false);
 	}
 
 	if(direction != _lastDirection) {
-		if(direction == -1) {
+		if(direction == BACKWARD) {
 			_gpio->setPin(_enablePin, 1);
 			_gpio->setPin(_directionPin, 0);
 		}
-		else if(direction == 1) {
+		else if(direction == FORWARD) {
 			_gpio->setPin(_enablePin, 1);
 			_gpio->setPin(_directionPin, direction);
+		}
+		else if(direction == STOP) {
+			_gpio->setPin(_enablePin, 0);
+			_gpio->setPwm(_speedPin, 0.0);
 		}
 
 		_lastDirection = direction;
 	}
 
-	if(direction != 0) {
-		_gpio->setPwm(_speedPin, speed);
-	}
-	else {
-		// Ignore speed settings, we're not supposed to work anyway
-		_gpio->setPwm(_speedPin, 0.0);
-		_gpio->setPin(_enablePin, 0);
-	}
+	_gpio->setPwm(_speedPin, speed);
 }
