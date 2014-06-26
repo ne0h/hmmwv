@@ -14,7 +14,7 @@ public:
 		FORWARD,
 		STOP,
 		BACKWARD
-	}
+	};
 
 	/**
 	 * @brief Creates a new engine instance. Pins are expected to be the ones that

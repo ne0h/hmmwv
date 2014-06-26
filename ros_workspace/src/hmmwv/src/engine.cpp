@@ -19,7 +19,7 @@ Engine::~Engine() {}
 
 void Engine::setSpeed(const Direction direction, const float speed)
 {
-	if(speed < 0.0 || speed > 1.0)) {
+	if(speed < 0.0 || speed > 1.0) {
 		printf("invalid speed: %f", speed);
 		assert(false);
 	}

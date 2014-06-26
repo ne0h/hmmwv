@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 	//driveRight.start(0);
 
 	// Set reasonable defaults for not actively used pins
-	gpio.setPin(GPIO::P8_8, false);
+	//gpio.setPin(GPIO::P8_8, false);
 
 	// init ros
 	init(argc, argv, "enginecontrol");
