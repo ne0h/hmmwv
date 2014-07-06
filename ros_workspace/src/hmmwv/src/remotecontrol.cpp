@@ -56,18 +56,11 @@ int main(int argc, char **argv) {
 		angular = (-1.0) * axis.at(0) / AXIS_MAX;	
 		linear  = (-1.0) * axis.at(1) / AXIS_MAX;
 
-		if (angular > 1.0)
-			angular = 1.0;
+		angular = min(angular, 1.0);
+		angular = max(angular, -1.0);
+		linear = min(linear, 1.0);
+		linear = max(linear, -1.0);
 
-		if (angular < -1.0)
-			angular = -1.0;
-
-		if (linear > 1.0)
-			linear = 1.0;
-
-		if (linear < -1.0)
-			linear = -1.0;
-			
 		geometry_msgs::Twist twist;
 		twist.angular.z = angular;
 		twist.linear.x  = linear;
