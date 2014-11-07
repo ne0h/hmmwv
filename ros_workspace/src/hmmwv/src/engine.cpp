@@ -1,7 +1,8 @@
+#include "engine.hpp"
+
 #include <cassert>
 #include <stdio.h>
 #include <ros/ros.h>
-#include "engine.hpp"
 
 Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionPin,
 	const GPIO::PwmPin speedPin) :
@@ -13,18 +14,13 @@ Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionP
 {
 	gpio->setPin(_enablePin, 0); // Disable first to avoid epileptic motors
 	gpio->setPwm(_speedPin, 0.0);
-	gpio->setPin(_directionPin, 1);
+	gpio->setPin(_directionPin, Direction::STOP);
 }
 
 Engine::~Engine() {}
 
-void Engine::setSpeed(const Direction direction, const float speed)
+void Engine::setDirection(const Direction direction)
 {
-	if(speed < 0.0 || speed > 1.0) {
-		printf("invalid speed: %f", speed);
-		assert(false);
-	}
-
 	if(direction != _lastDirection) {
 		if(direction == BACKWARD) {
 			_gpio->setPin(_enablePin, 1);
@@ -41,6 +37,14 @@ void Engine::setSpeed(const Direction direction, const float speed)
 
 		_lastDirection = direction;
 	}
-	
+}
+
+void Engine::setSpeed(const float speed)
+{
+	if(speed < 0.0 || speed > 1.0) {
+		printf("invalid speed: %f", speed);
+		assert(false);
+	}
+
 	_gpio->setPwm(_speedPin, speed);
 }

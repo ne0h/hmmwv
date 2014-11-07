@@ -30,13 +30,19 @@ public:
 	~Engine();
 
 	/**
-	 * @brief Set the motor direction and speed.
+	 * @brief Sets the motor's direction or stops it altogether.
 	 * 
 	 * @param direction Motor direction or Direction::STOP. When direction is
 	 * STOP, the speed value is forced to 0.0f and the "enable" pin is switched off.
+	 */
+	void setDirection(const Direction direction);
+
+	/**
+	 * @brief Set the motor speed.
+	 * 
 	 * @param speed Defines the duty cycle percent for speed PWM, 0 <= speed <= 1.
 	 */
-	void setSpeed(const Direction direction, const float speed = 0.0f);
+	void setSpeed(const float speed = 0.0f);
 
 private:
 	GPIO *_gpio;

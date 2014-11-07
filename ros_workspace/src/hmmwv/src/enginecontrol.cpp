@@ -1,11 +1,10 @@
-#include <string>
-#include <math.h>
-
-#include <ros/ros.h>
-#include <geometry_msgs/Twist.h>
-
 #include "gpio.hpp"
 #include "engine.hpp"
+
+#include <string>
+#include <math.h>
+#include <ros/ros.h>
+#include <geometry_msgs/Twist.h>
 
 using namespace ros;
 using namespace std;
@@ -41,30 +40,27 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	if (msg.linear.x > .1) {
 		// drive forward
 		ROS_INFO("Forward");
-		driveLeft.setSpeed(Engine::BACKWARD, leftSpd);
-		driveRight.setSpeed(Engine::FORWARD, rightSpd);
+		driveLeft.setDirection(Engine::BACKWARD);
+		driveLeft.setSpeed(leftSpd);
+		driveRight.setDirection(Engine::FORWARD);
+		driveRight.setSpeed(rightSpd);
 	}
 	else if (msg.linear.x < -.1) {
 		// drive backward
 		ROS_INFO("Backward");
-		// The speed value must be in range [0, 1]
-		driveLeft.setSpeed(Engine::FORWARD, leftSpd * -1.0);
-		driveRight.setSpeed(Engine::BACKWARD, rightSpd * -1.0);
+		driveLeft.setDirection(Engine::FORWARD);
+		driveLeft.setSpeed(leftSpd * -1.0);
+		driveRight.setDirection(Engine::BACKWARD);
+		driveRight.setSpeed(rightSpd * -1.0);
 	}
 	else {
 		// stop
-		driveLeft.setSpeed(Engine::STOP);
-		driveRight.setSpeed(Engine::STOP);
+		driveLeft.setDirection(Engine::STOP);
+		driveRight.setDirection(Engine::STOP);
 	}
 }
 
 int main(int argc, char **argv) {
-	//driveLeft.start(0); // Why were we doing that? oO
-	//driveRight.start(0);
-
-	// Set reasonable defaults for not actively used pins
-	//gpio.setPin(GPIO::P8_8, false);
-
 	// init ros
 	init(argc, argv, "enginecontrol");
 	NodeHandle n;
