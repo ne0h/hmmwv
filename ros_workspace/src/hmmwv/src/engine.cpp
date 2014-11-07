@@ -32,7 +32,7 @@ void Engine::setSpeed(const Direction direction, const float speed)
 		}
 		else if(direction == FORWARD) {
 			_gpio->setPin(_enablePin, 1);
-			_gpio->setPin(_directionPin, direction);
+			_gpio->setPin(_directionPin, 1);
 		}
 		else if(direction == STOP) {
 			_gpio->setPin(_enablePin, 0);

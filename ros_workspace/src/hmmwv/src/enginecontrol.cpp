@@ -10,11 +10,10 @@ using namespace ros;
 using namespace std;
 
 GPIO gpio;
-						// enable	direction		speed
-Engine driveLeft(&gpio, GPIO::P8_10, GPIO::P8_12, GPIO::P8_13);
-Engine driveRight(&gpio, GPIO::P9_23, GPIO::P9_21, GPIO::P9_14);
-//Engine rotatorLeft(..);
-//Engine rotatorRight(..);
+				
+// 						enable		direction		speed
+Engine driveLeft(&gpio, GPIO::P9_31, GPIO::P9_21, GPIO::P9_14);
+Engine driveRight(&gpio, GPIO::P8_10, GPIO::P8_12, GPIO::P8_13);
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
 	//ROS_INFO("%f", msg.linear.x);
