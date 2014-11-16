@@ -1,52 +1,50 @@
 #include <util/delay.h>
 #include <string.h>
+
+#include "pwm.h"
 #include "uart.h"
 
 #define ENGINE_RIGHT_PORT		PORTA
 #define ENGINE_RIGHT_ENABLE		PA0
 #define ENGINE_RIGHT_DIRECTION	PA1
 
-//4E 99 FF
-//CE 99 FF
+void engine_right() {
+	ENGINE_RIGHT_PORT |= (1 << ENGINE_RIGHT_ENABLE);
+
+	for (int i = 0; i < 1001; i++) {
+		pwm_set(i);
+		_delay_ms(2);
+	}
+}
+
+void engine_right_slow_down() {
+	for (int i = 1001; i > 0; i--) {
+		pwm_set(i);
+		_delay_ms(2);
+	}
+}
+
+void engine_right_stop() {
+	ENGINE_RIGHT_PORT &= ~(1 << ENGINE_RIGHT_ENABLE);
+}
+
+void engine_right_change_direction() {
+
+}
+
 int main() {
-
 	DDRA = 0x03;
+	DDRD = (1 << PD5);
 
-	uart_init();
+	pwm_init();
 
-	char c;
+	engine_right();
+	_delay_ms(10000);
+	engine_right_stop();
+
+
 	while (1) {
-		c = uart_getc();
 
-		if (c == 0x00) {
-			ENGINE_RIGHT_PORT &= ~(1 << ENGINE_RIGHT_ENABLE);
-		} else if (c == 0x01){
-			ENGINE_RIGHT_PORT |= (1 << ENGINE_RIGHT_ENABLE);
-		} else if (c == 0x02) {
-			ENGINE_RIGHT_PORT &= ~(1 << ENGINE_RIGHT_DIRECTION);
-		} else if (c == 0x03) {
-			ENGINE_RIGHT_PORT |= (1 << ENGINE_RIGHT_DIRECTION);
-		}
-
-		/*if (c == 0x01) {
-			char task = uart_getc();
-			if (task == 0x73) {
-
-				char target = uart_getc();
-				int set_value;
-
-				char value  = uart_getc();
-				if (value == 0x10) {
-					set_value = 0;
-				} else {
-					set_value = 1;
-				}
-
-				if (target == 0x10) {
-					ENGINE_RIGHT_PORT |= (set_value << ENGINE_RIGHT_ENABLE);
-				}
-			}
-		}*/
 	}
 
 	return 0;
