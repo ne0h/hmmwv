@@ -28,3 +28,17 @@ char uart_getc(void) {
 	loop_until_bit_is_set(UCSR0A, RXC0);
 	return (UDR0);
 }
+
+void uart_gets(char *s, uint8_t maxLength) {
+	uint8_t length = 0;
+
+	char c = uart_getc();
+	while (c != 0x00 && length < maxLength - 1) {
+		*s++ = c;
+
+		length++;
+		c = uart_getc();
+	}
+
+	*s = '\0';
+}
