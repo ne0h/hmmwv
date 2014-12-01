@@ -68,3 +68,8 @@ Now the pin value (binary) can be set arbitrarily:
 echo 1 > /sys/class/gpio/gpio/$pin/value
 echo 0 > /sys/class/gpio/gpio/$pin/value
 ```
+
+Notes
+-----
+
+* [Beaglebone Interactive Pin Map](http://eskimon.fr/beaglebone-black-gpio-interactive-map)
