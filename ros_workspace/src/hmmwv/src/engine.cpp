@@ -1,5 +1,6 @@
 #include <cassert>
 #include <stdio.h>
+#include <ros/ros.h>
 #include "engine.hpp"
 
 Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionPin,
@@ -40,6 +41,6 @@ void Engine::setSpeed(const Direction direction, const float speed)
 
 		_lastDirection = direction;
 	}
-
+	
 	_gpio->setPwm(_speedPin, speed);
 }
