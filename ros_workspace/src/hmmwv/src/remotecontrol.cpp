@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
 		angular = min(max(angular, -1.0), 1.0);
 		linear = min(max(linear, -1.0), 1.0);
 		stick2y = min(max(stick2y, -1.0), 1.0);
+		stick2y *= 0.1; // Scale wheel rotation nice and slow
 		
 		// SPEEED-BUTTON!
 		if (!buttons.at(1)) {
@@ -71,6 +72,7 @@ int main(int argc, char **argv) {
 
 		geometry_msgs::Twist twist;
 		twist.angular.z = angular;
+		twist.angular.y = stick2y;
 		twist.linear.x = linear;
 
 		// Rotate rotate;

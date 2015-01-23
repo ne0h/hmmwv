@@ -14,7 +14,7 @@ GPIO gpio;
 // 						enable		direction		speed
 Engine driveLeft(&gpio, GPIO::P9_31, GPIO::P9_21, GPIO::P9_14);
 Engine driveRight(&gpio, GPIO::P8_10, GPIO::P8_12, GPIO::P8_13);
-// Engine rotatorLeft(&gpio, GPIO::P9_26, GPIO::P9_24, GPIO::P9_);
+Engine rotatorLeft(&gpio, GPIO::P9_26, GPIO::P9_24, GPIO::P9_16);
 Engine rotatorRight(&gpio, GPIO::P8_17, GPIO::P8_15, GPIO::P8_19);
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
@@ -32,8 +32,13 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	double leftSpd = msg.linear.x;
 	double rightSpd = msg.linear.x;
 	// Second, add left/right speeds so that turning on the spot is possible
-	leftSpd -= msg.angular.z;
-	rightSpd += msg.angular.z;
+	// if(msg.linear.x >= 0) {
+		leftSpd -= msg.angular.z;
+		rightSpd += msg.angular.z;
+	// } else {
+	// 	leftSpd += msg.angular.z;
+	// 	rightSpd -= msg.angular.z;
+	// }
 	// Determine rotation directions
 	Engine::Direction leftDir = leftSpd > 0 ? Engine::BACKWARD : Engine::FORWARD;
 	Engine::Direction rightDir = rightSpd > 0 ? Engine::FORWARD : Engine::BACKWARD;
@@ -49,25 +54,17 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	driveRight.setSpeed(rightSpd);
 	// ================
 
-	// if (msg.linear.x > .1) {
-	// 	// drive forward
-	// 	driveLeft.setDirection(Engine::BACKWARD);
-	// 	driveLeft.setSpeed(leftSpd);
-	// 	driveRight.setDirection(Engine::FORWARD);
-	// 	driveRight.setSpeed(rightSpd);
-	// }
-	// else if (msg.linear.x < -.1) {
-	// 	// drive backward
-	// 	driveLeft.setDirection(Engine::FORWARD);
-	// 	driveLeft.setSpeed(leftSpd * -1.0);
-	// 	driveRight.setDirection(Engine::BACKWARD);
-	// 	driveRight.setSpeed(rightSpd * -1.0);
-	// }
-	// else {
-	// 	// stop
-	// 	driveLeft.setDirection(Engine::STOP);
-	// 	driveRight.setDirection(Engine::STOP);
-	// }
+	// Wheel disc rotation
+	double leftRotSpd = msg.angular.y;
+	double rightRotSpd = msg.angular.y;
+	Engine::Direction leftRotDir = leftRotSpd > 0 ? Engine::BACKWARD : Engine::FORWARD;
+	Engine::Direction rightRotDir = rightRotSpd > 0 ? Engine::FORWARD : Engine::BACKWARD;
+	leftRotSpd = min(1.0, max(0.0, leftRotSpd));
+	rightRotSpd = min(1.0, max(0.0, rightRotSpd));
+	rotatorLeft.setDirection(leftRotDir);
+	rotatorLeft.setSpeed(leftRotSpd);
+	rotatorRight.setDirection(rightRotDir);
+	rotatorRight.setSpeed(leftRotSpd);
 }
 
 int main(int argc, char **argv) {
