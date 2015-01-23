@@ -1,34 +1,27 @@
-Drive engines
-=============
+### Drive engines
 
-Left side
----------
+#### Left side
 
 * Enable: P9_31
 * Direction: P9_21
 * Speed: P9_14
 
-Right side
-----------
+#### Right side
 
 * Enable: P8_10
 * Direction: P8_12
 * Speed: P8_13
 
-Rotate engines
-==============
+### Rotate engines
 
-Left side
----------
+#### Left side
 
 * Enable: P9_26
 * Direction: P9_24
-* Speed: not set so far
+* Speed: P9_16
 
-Right side
-----------
+#### Right side
 
 * Enable: P8_17
 * Direction: P8_15
 * Speed: P8_19
-
