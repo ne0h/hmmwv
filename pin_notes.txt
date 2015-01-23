@@ -1,26 +1,34 @@
-Fahrmotor links
-P8_10 (Enable)
-P8_12 (Direction)
-P8_13 (Speed)
+Drive engines
+=============
 
-Fahrmotor rechts
-P9_23 (Enable)
-P9_21 (Direction)
-P9_14 (Speed)
+Left side
+---------
 
-Kippmotor links
-P8_39 -> P8_17 (Enable)
-P8_35 -> P8_15 (Direction)
+* Enable: P9_31
+* Direction: P9_21
+* Speed: P9_14
 
-Kippmotor rechts
-P9_29 -> P9_26 (Enable)
-P9_31 -> P9_24 (Direction)
+Right side
+----------
 
-Putt:
-P9_17
-P9_18
-P9_22
-P9_25
-P9_29
-P9_30
-P9_31 (n.a.)
+* Enable: P8_10
+* Direction: P8_12
+* Speed: P8_13
+
+Rotate engines
+==============
+
+Left side
+---------
+
+* Enable: P9_26
+* Direction: P9_24
+* Speed: not set so far
+
+Right side
+----------
+
+* Enable: P8_17
+* Direction: P8_15
+* Speed: P8_19
+
