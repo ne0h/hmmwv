@@ -68,7 +68,6 @@ int main(int argc, char **argv) {
 		if (linear < 0) {
 			angular *= (-1.0);
 		}
-		ROS_INFO("%f : %f", linear, angular);
 
 		geometry_msgs::Twist twist;
 		twist.angular.z = angular;
