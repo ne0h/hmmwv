@@ -1,15 +1,13 @@
-#include <vector>
-#include <string>
-
-#include <math.h>
+#include "joystick.hpp"
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include <vector>
+#include <string>
+#include <math.h>
 
-#include "joystick.hpp"
-
-#define DEAD_ZONE 16384
-#define AXIS_MAX  32767
+const int DEAD_ZONE = 16384;
+const int AXIS_MAX = 32767;
 
 using namespace ros;
 using namespace std;
