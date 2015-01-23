@@ -58,12 +58,14 @@ int main(int argc, char **argv) {
 		angular = min(max(angular, -1.0), 1.0);
 		linear = min(max(linear, -1.0), 1.0);
 		stick2y = min(max(stick2y, -1.0), 1.0);
-		stick2y *= 0.1; // Scale wheel rotation nice and slow
 		
 		// SPEEED-BUTTON!
 		if (!buttons.at(1)) {
 			angular *= 0.25;
 			linear *= 0.25;
+		}
+		if (!buttons.at(2)) {
+			stick2y *= 0.1; // Scale wheel rotation nice and slow
 		}
 
 		if (linear < 0) {

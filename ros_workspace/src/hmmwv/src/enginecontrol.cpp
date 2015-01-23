@@ -59,6 +59,8 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	double rightRotSpd = msg.angular.y;
 	Engine::Direction leftRotDir = leftRotSpd > 0 ? Engine::BACKWARD : Engine::FORWARD;
 	Engine::Direction rightRotDir = rightRotSpd > 0 ? Engine::FORWARD : Engine::BACKWARD;
+	leftRotSpd = leftRotSpd < 0 ? leftRotSpd * -1.0 : leftRotSpd;
+	rightRotSpd = rightRotSpd < 0 ? rightRotSpd * -1.0 : rightRotSpd;
 	leftRotSpd = min(1.0, max(0.0, leftRotSpd));
 	rightRotSpd = min(1.0, max(0.0, rightRotSpd));
 	rotatorLeft.setDirection(leftRotDir);
