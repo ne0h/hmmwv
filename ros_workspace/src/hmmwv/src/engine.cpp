@@ -14,7 +14,7 @@ Engine::Engine(GPIO *gpio, const GPIO::Pin enablePin, const GPIO::Pin directionP
 {
 	gpio->setPin(_enablePin, 0); // Disable first to avoid epileptic motors
 	gpio->setPwm(_speedPin, 0.0);
-	gpio->setPin(_directionPin, Direction::STOP);
+	gpio->setPin(_directionPin, STOP);
 }
 
 Engine::~Engine() {}
