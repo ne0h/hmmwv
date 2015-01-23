@@ -1,13 +1,14 @@
 HMMWV
 =====
+
 Abstract
 ---------------
 
 HMMWV is a medium sized Robot designed to do the following tasks:
 
-*	drive by remote control
-*	drive automatically 
-*	find and climb steps and stairs
+* drive by remote control
+* drive automatically 
+* find and climb steps and stairs
 	
 To get up with this tasks it has a stiff chassis made with aluminum profiles and two stable wheel suspensions which can be tilted individually by two high torque EC maxon Motors.
 
@@ -18,6 +19,7 @@ For orientation and path-finding HMMWV has a lidar system from Sick (LMS 100) wh
 As CPU HMMWV uses an ARM based singe-board computer from Texas Instruments (Beaglebone Black). Due to the fact that a two dimensional cross section of the environment is not enough to get orientation in a three dimensional room, we put the Sensor on a slow rotating platform, which gives us the opportunity to calculate an three dimensional picture of the robot’s surrounding area.
 
 If you want to see images please click on the images folder or the following link: https://github.com/hmmwv-team/hmmwv/tree/master/images
+
 ### Actual project status
 
 * The chassis of HMMWV is built 
@@ -72,4 +74,5 @@ echo 0 > /sys/class/gpio/gpio/$pin/value
 Notes
 -----
 
+* The code for the lms100 driver is taken from *https://github.com/ipa320/cob_driver/tree/indigo_dev/cob_sick_lms1xx*
 * [Beaglebone Interactive Pin Map](http://eskimon.fr/beaglebone-black-gpio-interactive-map)
