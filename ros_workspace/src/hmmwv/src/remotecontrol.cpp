@@ -60,10 +60,15 @@ int main(int argc, char **argv) {
 		stick2y = min(max(stick2y, -1.0), 1.0);
 		
 		// SPEEED-BUTTON!
-		if(!buttons.at(1)) {
+		if (!buttons.at(1)) {
 			angular *= 0.25;
 			linear *= 0.25;
 		}
+
+		if (linear < 0) {
+			angular *= (-1.0);
+		}
+		ROS_INFO("%f : %f", linear, angular);
 
 		geometry_msgs::Twist twist;
 		twist.angular.z = angular;
