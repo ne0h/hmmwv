@@ -12,6 +12,8 @@ Joystick::Joystick() {
 		if (SDL_JoystickNumAxes(tmpStick) > 2) {
 			m_joystick = tmpStick;
 			m_name = SDL_JoystickName(i);
+
+			break;
 		}
 	}
 
