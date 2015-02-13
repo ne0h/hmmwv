@@ -8,7 +8,7 @@
 #include <math.h>
 
 const int DEAD_ZONE = 16384;
-const int AXIS_MAX = 32767.0;
+const int AXIS_MAX = 32767;
 
 using namespace ros;
 using namespace std;
