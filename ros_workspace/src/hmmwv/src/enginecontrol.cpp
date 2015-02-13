@@ -14,7 +14,7 @@ GPIO gpio;
 // 						enable		direction		speed
 Engine driveLeft(&gpio, GPIO::P9_31, GPIO::P9_21, GPIO::P9_14);
 Engine driveRight(&gpio, GPIO::P8_10, GPIO::P8_12, GPIO::P8_13);
-Engine rotatorLeft(&gpio, GPIO::P9_26, GPIO::P9_24, GPIO::P9_16);
+Engine rotatorLeft(&gpio, GPIO::P9_24, GPIO::P9_26, GPIO::P9_16);
 Engine rotatorRight(&gpio, GPIO::P8_17, GPIO::P8_15, GPIO::P8_19);
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
