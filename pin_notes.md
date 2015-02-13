@@ -16,8 +16,8 @@
 
 #### Left side
 
-* Enable: P9_26
-* Direction: P9_24
+* Enable: P9_24
+* Direction: P9_26
 * Speed: P9_16
 
 #### Right side
