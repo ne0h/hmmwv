@@ -71,6 +71,23 @@ echo 1 > /sys/class/gpio/gpio/$pin/value
 echo 0 > /sys/class/gpio/gpio/$pin/value
 ```
 
+Example setup
+-------------
+
+### hmmwv
+
+* hardware: Mini PC Gigabyte GB-BXCE-2955
+* tasks: WLAN access point, navigation
+* ros nodes: roscore, lms100
+* `ROS_MASTER_URI=http://hmmwv:11311` and `ROS_HOSTNAME=hmmwv`
+
+### bone
+
+* hardware: beaglebone black
+* tasks: engine control
+* ros nodes: enginecontrol
+* `ROS_MASTER_URI=http://hmmwv:11311` and `ROS_HOSTNAME=bone`
+
 Notes
 -----
 
