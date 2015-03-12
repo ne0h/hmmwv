@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 	// pub = n.advertise<geometry_msgs::Twist>("turtle1/cmd_rotate", 1);
 
 	// startup main loop
-	Timer remoteTimer = n.createTimer(Duration(0.166 /*60 Hz*/), updateRemote);
+	Timer remoteTimer = n.createTimer(Duration(0.0166 /*60 Hz*/), updateRemote);
 	spin();
 	return 0;
 }
