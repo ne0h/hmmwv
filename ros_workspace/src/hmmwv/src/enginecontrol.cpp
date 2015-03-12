@@ -5,8 +5,9 @@
 #include <math.h>
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
+#include <tf/transform_broadcaster.h>
 
-using namespace ros;
 using namespace std;
 
 GPIO gpio;
@@ -17,8 +18,27 @@ Engine driveRight(&gpio, GPIO::P8_10, GPIO::P8_12, GPIO::P8_13);
 Engine rotatorLeft(&gpio, GPIO::P9_24, GPIO::P9_26, GPIO::P9_16);
 Engine rotatorRight(&gpio, GPIO::P8_17, GPIO::P8_15, GPIO::P8_19);
 
+// for odometry
+ros::Time currentTime = ros::Time::now();
+ros::Time lastTime = ros::Time::now();
+ros::Publisher odomPub;
+tf::TransformBroadcaster odomBroadcaster;
+double x = 0;
+double y = 0;
+double theta = 0;
+double vx = 0;
+double vy = 0;
+double vtheta = 0;
+
 void velocityCallback(const geometry_msgs::Twist& msg) {
 	//ROS_INFO("%f", msg.linear.x);
+
+	// Store odometry input values
+	lastTime = currentTime;
+	currentTime = ros::Time::now();
+	vx = msg.linear.x;
+	vy = msg.linear.y;
+	vtheta = msg.angular.z * 10; // absolutely uneducated guess
 
 	// ================
 	// Car-like steering (rotate around inner wheel)
@@ -69,15 +89,63 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	rotatorRight.setSpeed(leftRotSpd);
 }
 
+void publishOdometry(const ros::TimerEvent&) {
+	// Source: http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom
+	// Compute input values
+	double dt = (currentTime - lastTime).toSec();
+	double dx = (vx * cos(theta) - vy * sin(theta)) * dt;
+	double dy = (vx * sin(theta) - vy * cos(theta)) * dt;
+	double dtheta = vtheta * dt;
+	x += dx;
+	y += dy;
+	theta += dtheta;
+
+	// Transform frame
+	//since all odometry is 6DOF we'll need a quaternion created from yaw
+	geometry_msgs::Quaternion odomQuat = tf::createQuaternionMsgFromYaw(theta);
+
+	geometry_msgs::TransformStamped odomTrans;
+	odomTrans.header.stamp = currentTime;
+	odomTrans.header.frame_id = "odom";
+	odomTrans.child_frame_id = "base_link";
+
+	odomTrans.transform.translation.x = x;
+	odomTrans.transform.translation.y = y;
+	odomTrans.transform.translation.z = 0.0;
+	odomTrans.transform.rotation = odomQuat;
+
+	//send the transform
+	odomBroadcaster.sendTransform(odomTrans);
+
+	// Odometry message
+	nav_msgs::Odometry odom;
+	odom.header.stamp = currentTime;
+	odom.header.frame_id = "odom";
+
+	//set the position
+	odom.pose.pose.position.x = x;
+	odom.pose.pose.position.y = y;
+	odom.pose.pose.position.z = 0.0;
+	odom.pose.pose.orientation = odomQuat;
+
+	//set the velocity
+	odom.child_frame_id = "base_link";
+	odom.twist.twist.linear.x = vx;
+	odom.twist.twist.linear.y = vy;
+	odom.twist.twist.angular.z = vtheta;
+	//publish the message
+	odomPub.publish(odom);
+}
+
 int main(int argc, char **argv) {
 	// init ros
-	init(argc, argv, "enginecontrol");
-	NodeHandle n;
+	ros::init(argc, argv, "enginecontrol");
+	ros::NodeHandle n;
 	// This is correct - we're borrowing the turtle's topics
-	Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
+	ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
+	odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
+	ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/2.0/*2 Hz*/), publishOdometry);
 	ROS_INFO("enginecontrol up and running.");
-	
-	// enter ros loop and wait for callbacks
-	spin();
+	ros::spin();
 	return 0;
 }
