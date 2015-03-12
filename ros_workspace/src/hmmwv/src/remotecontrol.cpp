@@ -14,7 +14,6 @@ using namespace ros;
 using namespace std;
 
 int main(int argc, char **argv) {
-	
 	// init sdl and connect to controller
 	Joystick joystick;
 	string name = joystick.getName();
@@ -36,9 +35,10 @@ int main(int argc, char **argv) {
 	// pub = n.advertise<geometry_msgs::Twist>("turtle1/cmd_rotate", 1);
 
 	// startup key loop
-	// use button.0 to stop
-	bool quit  = false;
-	while (!quit) {
+	Rate rate(60.0/*Hz*/);
+	while (n.ok()) {
+		spinOnce();
+
 		// get axis values
 		// use axis.0 for left/right
 		// and axis.1 for up/down
@@ -47,9 +47,7 @@ int main(int argc, char **argv) {
 		
 		// check for button.0 to stop
 		vector<bool> buttons = event.getButtons();
-		if (buttons.at(0) == true)
-			quit = true;
-		
+
 		// calculate position values
 		double angular = (-1.0) * axis.at(0) / AXIS_MAX;
 		double linear  = (-1.0) * axis.at(1) / AXIS_MAX;
@@ -79,8 +77,8 @@ int main(int argc, char **argv) {
 
 		// Rotate rotate;
 		// rotate.linear.x = stick2y;
-		
-      	pub.publish(twist);
+		pub.publish(twist);
+		rate.sleep();
 	}
 
 	return 0;
