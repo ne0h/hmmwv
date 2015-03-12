@@ -88,6 +88,25 @@ Example setup
 * ros nodes: enginecontrol
 * `ROS_MASTER_URI=http://hmmwv:11311` and `ROS_HOSTNAME=bone`
 
+Mapping/Odometry
+----------------
+
+A few extra nodes apart from the aforementioned lms100 are needed to make ros build a map from the LMS100 sensor data. To put the laser scan data into perspective, ros also needs odometry data provided by us. (Having a laser scan doesn't help much on its own, we also need to know if the obstacle moved or we just drove towards it...)
+
+To see the laser scan data in rviz:
+* Obligatory: `rosrun cob_sick_lms1xx lms100`
+* tf reference frame: `rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 map base_laser_link 100`
+  * The name "base_laser_link" is important. This frame defines the coordinate system laser points are mapped into.
+  * It is suspected that this coordinate system needs to be offset to the actual laser scanner position on the robot.
+* Now start rviz. In rviz:
+  * Via the "add" button (bottom left), add a "LaserScan" module, set the topic to "lms1xx/scan". Now the laser measurements should be visible in the 3D view. (The orthographic camera is useful...)
+  * The "TF" module can help analyzing problems with reference frames.
+
+To enable automatic map generation:
+* Start the enginecontrol node (provides odometry data)
+* Add the "Map" module to rviz. That should show an occupancy grid depicting current map state.
+  * (This didn't work yet at the time of writing...)
+
 Notes
 -----
 
