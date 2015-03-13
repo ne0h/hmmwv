@@ -103,6 +103,7 @@ To see the laser scan data in rviz:
   * The "TF" module can help analyzing problems with reference frames.
 
 To enable automatic map generation:
+* Start the mapping node: `rosrun gmapping slam_gmapping scan:=base_scan`
 * Start the enginecontrol node (provides odometry data)
 * Add the "Map" module to rviz. That should show an occupancy grid depicting current map state.
   * (This didn't work yet at the time of writing...)
