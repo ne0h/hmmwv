@@ -57,6 +57,7 @@ Startup Instructions
 	1. `roslaunch hmmwv remote.launch`
 
 *Note:* It is recommended to either manually start a roscore on hmmwv first or let hmmwv.launch start one for you _on that computer_.
+
 *Note 2:* This assumes you have a working ros installation and built our robot code successfully.
 
 BBB GPIO Zen
