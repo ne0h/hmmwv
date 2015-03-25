@@ -53,8 +53,6 @@ void updateRemote(const TimerEvent&) {
 	twist.angular.y = stick2y;
 	twist.linear.x = linear;
 
-	// Rotate rotate;
-	// rotate.linear.x = stick2y;
 	pub.publish(twist);
 }
 
@@ -68,8 +66,6 @@ int main(int argc, char **argv) {
 	init(argc, argv, "remotecontrol");
 	NodeHandle n;
 	pub = n.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
-	// Create a fresh publisher before using this line...
-	// pub = n.advertise<geometry_msgs::Twist>("turtle1/cmd_rotate", 1);
 
 	// startup main loop
 	Timer remoteTimer = n.createTimer(Duration(0.0166 /*60 Hz*/), updateRemote);

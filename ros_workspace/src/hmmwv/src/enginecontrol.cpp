@@ -41,29 +41,17 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	vy = msg.linear.y;
 	vtheta = msg.angular.z * 10; // absolutely uneducated guess
 
-	// ================
-	// Car-like steering (rotate around inner wheel)
-	//double leftSpd = max(0.0, min(1.0, msg.linear.x * (1.0 + msg.angular.x)));
-	//double rightSpd = max(0.0, min(1.0, msg.linear.x * (1.0 - msg.angular.x)));
-	// ================
-
-	// ================
 	// Tank-like steering (rotate around vehicle center)
-	// First, set linear back/forward speed
+	// Set linear back/forward speed
 	double leftSpd = msg.linear.x;
 	double rightSpd = msg.linear.x;
-	// Second, add left/right speeds so that turning on the spot is possible
-	// if(msg.linear.x >= 0) {
-		leftSpd -= msg.angular.z;
-		rightSpd += msg.angular.z;
-	// } else {
-	// 	leftSpd += msg.angular.z;
-	// 	rightSpd -= msg.angular.z;
-	// }
+	// Add left/right speeds so that turning on the spot is possible
+	leftSpd -= msg.angular.z;
+	rightSpd += msg.angular.z;
 	// Determine rotation directions
 	Engine::Direction leftDir = leftSpd > 0 ? Engine::BACKWARD : Engine::FORWARD;
 	Engine::Direction rightDir = rightSpd > 0 ? Engine::FORWARD : Engine::BACKWARD;
-	// Normalize
+	// Map [-1, 1] -> [0, 1] as we've extracted the directional component
 	leftSpd = leftSpd < 0 ? leftSpd * -1.0 : leftSpd;
 	rightSpd = rightSpd < 0 ? rightSpd * -1.0 : rightSpd;
 	leftSpd = min(1.0, max(0.0, leftSpd));
@@ -73,7 +61,6 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	driveLeft.setSpeed(leftSpd);
 	driveRight.setDirection(rightDir);
 	driveRight.setSpeed(rightSpd);
-	// ================
 
 	// Wheel disc rotation
 	double leftRotSpd = msg.angular.y;
