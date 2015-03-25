@@ -113,3 +113,4 @@ Notes
 
 * The code for the lms100 driver is taken from *https://github.com/ipa320/cob_driver/tree/indigo_dev/cob_sick_lms1xx*
 * [Beaglebone Interactive Pin Map](http://eskimon.fr/beaglebone-black-gpio-interactive-map)
+* At normal (reduced) driving speed, the robot covers 2 meters within 6,872 seconds
