@@ -1,0 +1,3 @@
+<launch>
+  <node name="remote_control" pkg="hmmwv" type="remotecontrol" />
+</launch>
