@@ -45,15 +45,19 @@ Build Workspace
 If you want to run a node from somewhere else than the roscore, you need to set *ROS_MASTER_URI=http://host:11311*.
 Take a look at *turtlesim.sh* and *hmmwv.sh* for increased convenience.
 
-Startup Instructions for non-techies
-------------------------------------
+Startup Instructions
+--------------------
 
-1. SSH into the beagle
-1. cd hmmwv
-1. roscore &
-1. ./remote.sh &
-1. sudo su
-1. ./engine.sh
+1. Export a fitting ROS_MASTER_URI on all machines, f.e. `export ROS_MASTER_URI=http://hmmwv:11311`
+1. On hmmwv (the mini PC below that wood plate)
+	1. `roslaunch hmmwv hmmwv.launch`
+1. On the beagle
+	1. `roslaunch hmmwv engine.launch` (*Must* run as root!)
+1. On the computer that has the controller plugged in
+	1. `roslaunch hmmwv remote.launch`
+
+*Note:* It is recommended to either manually start a roscore on hmmwv first or let hmmwv.launch start one for you _on that computer_.
+*Note 2:* This assumes you have a working ros installation and built our robot code successfully.
 
 BBB GPIO Zen
 ------------
@@ -94,19 +98,16 @@ Mapping/Odometry
 A few extra nodes apart from the aforementioned lms100 are needed to make ros build a map from the LMS100 sensor data. To put the laser scan data into perspective, ros also needs odometry data provided by us. (Having a laser scan doesn't help much on its own, we also need to know if the obstacle moved or we just drove towards it...)
 
 To see the laser scan data in rviz:
-* Obligatory: `rosrun cob_sick_lms1xx lms100`
-* tf reference frame: `rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 map base_laser_link 100`
-  * The name "base_laser_link" is important. This frame defines the coordinate system laser points are mapped into.
-  * It is suspected that this coordinate system needs to be offset to the actual laser scanner position on the robot.
+* Start up all that mapping stuff: `roslaunch hmmwv hmmwv.launch`
 * Now start rviz. In rviz:
   * Via the "add" button (bottom left), add a "LaserScan" module, set the topic to "lms1xx/scan". Now the laser measurements should be visible in the 3D view. (The orthographic camera is useful...)
   * The "TF" module can help analyzing problems with reference frames.
 
 To enable automatic map generation:
-* Start the mapping node: `rosrun gmapping slam_gmapping scan:=base_scan`
-* Start the enginecontrol node (provides odometry data)
+* Make sure you have started up the mapping stuff (see above)
+* Start the enginecontrol node (provides odometry data): `roslaunch hmmwv engine.launch`
 * Add the "Map" module to rviz. That should show an occupancy grid depicting current map state.
-  * (This didn't work yet at the time of writing...)
+  * The map is updated as the robot moves, *not* regularly in time.
 
 Notes
 -----
