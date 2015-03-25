@@ -7,6 +7,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
+#include <boost/shared_ptr.hpp>
 
 using namespace std;
 
@@ -19,10 +20,10 @@ Engine rotatorLeft(&gpio, GPIO::P9_24, GPIO::P9_26, GPIO::P9_16);
 Engine rotatorRight(&gpio, GPIO::P8_17, GPIO::P8_15, GPIO::P8_19);
 
 // for odometry
-ros::Time currentTime = ros::Time::now();
-ros::Time lastTime = ros::Time::now();
+ros::Time currentTime;
+ros::Time lastTime;
 ros::Publisher odomPub;
-tf::TransformBroadcaster odomBroadcaster;
+boost::shared_ptr<tf::TransformBroadcaster> odomBroadcaster;
 double x = 0;
 double y = 0;
 double theta = 0;
@@ -114,8 +115,7 @@ void publishOdometry(const ros::TimerEvent&) {
 	odomTrans.transform.translation.z = 0.0;
 	odomTrans.transform.rotation = odomQuat;
 
-	//send the transform
-	odomBroadcaster.sendTransform(odomTrans);
+	odomBroadcaster->sendTransform(odomTrans);
 
 	// Odometry message
 	nav_msgs::Odometry odom;
@@ -133,17 +133,20 @@ void publishOdometry(const ros::TimerEvent&) {
 	odom.twist.twist.linear.x = vx;
 	odom.twist.twist.linear.y = vy;
 	odom.twist.twist.angular.z = vtheta;
-	//publish the message
+
 	odomPub.publish(odom);
 }
 
 int main(int argc, char **argv) {
-	// init ros
 	ros::init(argc, argv, "enginecontrol");
 	ros::NodeHandle n;
+	currentTime = ros::Time::now();
+	lastTime = ros::Time::now();
+
 	// This is correct - we're borrowing the turtle's topics
 	ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
 	odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
+	odomBroadcaster = boost::make_shared<tf::TransformBroadcaster>();
 	ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/2.0/*2 Hz*/), publishOdometry);
 	ROS_INFO("enginecontrol up and running.");
 	ros::spin();
