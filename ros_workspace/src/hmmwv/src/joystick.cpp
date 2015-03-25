@@ -1,8 +1,12 @@
 #include "joystick.hpp"
+#include <stdexcept>
 
 Joystick::Joystick() {
 	SDL_Init(SDL_INIT_JOYSTICK);
 	int num_joysticks = SDL_NumJoysticks();
+	if (num_joysticks < 1) {
+		throw std::runtime_error("No joysticks found!");
+	}
 
 	// take first device that appears to be a joystick
 	// and no strange vbox device for example...
