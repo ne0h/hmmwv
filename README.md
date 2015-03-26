@@ -91,6 +91,9 @@ Example setup
 * hardware: beaglebone black
 * tasks: engine control
 * ros nodes: enginecontrol
+* network:
+	* hostname: `bone` 
+	* address: `192.168.1.12/24`, gw `192.168.1.254`
 * `ROS_MASTER_URI=http://hmmwv:11311` and `ROS_HOSTNAME=bone`
 
 Mapping/Odometry
