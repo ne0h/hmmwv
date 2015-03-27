@@ -6,6 +6,7 @@
 * Direction: P9_21
 * Speed: P9_14
 * Tacho: P9_11
+
 #### Right side
 
 * Enable: P8_10
