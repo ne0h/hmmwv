@@ -63,7 +63,7 @@ Startup Instructions
 BBB GPIO Zen
 ------------
 
-In the following, $pin refers to pin numbers as used by the kernel. Mappings for the pins we use are available in the `Pin` enum in gpio.h.
+First of all, the PWM pins must be enabled by adding an argument to the kernel command line in uEnv.txt on the Bone's boot partition (wth?!): `optargs=capemgr.enable_partno=BB-BONE-PWMT`. In the following, $pin refers to pin numbers as used by the kernel. Mappings for the pins we use are available in the `Pin` enum in gpio.h.
 
 Each used pin must be exported before first usage and it's direction needs to be set (in/out):
 ```
