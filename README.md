@@ -95,6 +95,7 @@ Example setup
 	* hostname: `bone` 
 	* address: `192.168.1.12/24`, gw `192.168.1.254`
 * `ROS_MASTER_URI=http://hmmwv:11311` and `ROS_HOSTNAME=bone`
+* ROS installation instructions for armhf: http://wiki.ros.org/indigo/Installation/UbuntuARM
 
 Mapping/Odometry
 ----------------
