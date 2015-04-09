@@ -1,6 +1,3 @@
-#include "gpio.hpp"
-#include "engine.hpp"
-
 #include <string>
 #include <math.h>
 #include <ros/ros.h>
@@ -8,16 +5,13 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
 #include <boost/shared_ptr.hpp>
+#include <fstream>
 
 using namespace std;
 
-GPIO gpio;
-
-// 						enable		direction		speed
-Engine driveLeft(&gpio, GPIO::P9_31, GPIO::P9_21, GPIO::P9_14);
-Engine driveRight(&gpio, GPIO::P8_10, GPIO::P8_12, GPIO::P8_13);
-Engine rotatorLeft(&gpio, GPIO::P9_24, GPIO::P9_26, GPIO::P9_16);
-Engine rotatorRight(&gpio, GPIO::P8_17, GPIO::P8_15, GPIO::P8_19);
+// A serial interface used to send commands to the Arduino that controls
+// the motor controllers. (Yeah, recursion!)
+std::fstream tty;
 
 // for odometry
 ros::Time currentTime;
@@ -49,32 +43,28 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	leftSpd -= msg.angular.z;
 	rightSpd += msg.angular.z;
 	// Determine rotation directions
-	Engine::Direction leftDir = leftSpd > 0 ? Engine::BACKWARD : Engine::FORWARD;
-	Engine::Direction rightDir = rightSpd > 0 ? Engine::FORWARD : Engine::BACKWARD;
+	char leftDir = leftSpd > 0 ? 'b' : 'f';
+	char rightDir = rightSpd > 0 ? 'f' : 'b';
 	// Map [-1, 1] -> [0, 1] as we've extracted the directional component
 	leftSpd = leftSpd < 0 ? leftSpd * -1.0 : leftSpd;
 	rightSpd = rightSpd < 0 ? rightSpd * -1.0 : rightSpd;
 	leftSpd = min(1.0, max(0.0, leftSpd));
 	rightSpd = min(1.0, max(0.0, rightSpd));
 	// Apply!
-	driveLeft.setDirection(leftDir);
-	driveLeft.setSpeed(leftSpd);
-	driveRight.setDirection(rightDir);
-	driveRight.setSpeed(rightSpd);
+	tty << "dl" << leftDir  << leftSpd  * 256 << std::endl;
+	tty << "dr" << rightDir << rightSpd * 256 << std::endl;
 
 	// Wheel disc rotation
 	double leftRotSpd = msg.angular.y;
 	double rightRotSpd = msg.angular.y;
-	Engine::Direction leftRotDir = leftRotSpd > 0 ? Engine::BACKWARD : Engine::FORWARD;
-	Engine::Direction rightRotDir = rightRotSpd > 0 ? Engine::FORWARD : Engine::BACKWARD;
+	char leftRotDir = leftRotSpd > 0 ? 'b' : 'f';
+	char rightRotDir = rightRotSpd > 0 ? 'f' : 'b';
 	leftRotSpd = leftRotSpd < 0 ? leftRotSpd * -1.0 : leftRotSpd;
 	rightRotSpd = rightRotSpd < 0 ? rightRotSpd * -1.0 : rightRotSpd;
 	leftRotSpd = min(1.0, max(0.0, leftRotSpd));
 	rightRotSpd = min(1.0, max(0.0, rightRotSpd));
-	rotatorLeft.setDirection(leftRotDir);
-	rotatorLeft.setSpeed(leftRotSpd);
-	rotatorRight.setDirection(rightRotDir);
-	rotatorRight.setSpeed(leftRotSpd);
+	tty << "rl" << leftRotDir  << leftRotSpd  * 256 << std::endl;
+	tty << "rr" << rightRotDir << rightRotSpd * 256 << std::endl;
 }
 
 void publishOdometry(const ros::TimerEvent&) {
@@ -130,6 +120,12 @@ int main(int argc, char **argv) {
 	currentTime = ros::Time::now();
 	lastTime = ros::Time::now();
 
+	tty.open("/dev/ttyACM0", std::fstream::in | std::fstream::out | std::fstream::app);
+	if(!tty.is_open()) {
+		ROS_INFO("Couldn't open /dev/ttyACM0. Is the Arduino plugged in?");
+	}
+	tty << std::hex;
+
 	// This is correct - we're borrowing the turtle's topics
 	ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
 	odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
@@ -137,5 +133,6 @@ int main(int argc, char **argv) {
 	ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/2.0/*2 Hz*/), publishOdometry);
 	ROS_INFO("enginecontrol up and running.");
 	ros::spin();
+	tty.close();
 	return 0;
 }
