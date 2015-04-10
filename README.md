@@ -86,17 +86,10 @@ Example setup
 * ros nodes: roscore, lms100
 * `ROS_MASTER_URI=http://hmmwv:11311` and `ROS_HOSTNAME=hmmwv`
 
-### bone
+### Arduino (engine controller)
 
-* hardware: beaglebone black
-* tasks: engine control
-* ros nodes: enginecontrol
-* network:
-	* hostname: `bone` 
-	* address: `192.168.1.12/24`, gw `192.168.1.254`
-* `ROS_MASTER_URI=http://hmmwv:11311` and `ROS_HOSTNAME=bone`
-* ROS installation instructions for armhf: http://wiki.ros.org/indigo/Installation/UbuntuARM
-* LC_ALL needs to be set for ROS to work (diverging from Ubuntu defaults...)
+* Arduino Mega 2560
+* Accessible via */dev/ttyACM0*, user has to be in group *dialout*
 
 Mapping/Odometry
 ----------------
