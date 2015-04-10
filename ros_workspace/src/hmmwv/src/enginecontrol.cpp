@@ -5,13 +5,19 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
 #include <boost/shared_ptr.hpp>
+#include <fcntl.h>
+#include <termios.h>
+#include <stdio.h>
 #include <fstream>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 
 // A serial interface used to send commands to the Arduino that controls
 // the motor controllers. (Yeah, recursion!)
-std::fstream tty;
+//std::fstream tty;
+FILE* tty;
 
 // for odometry
 ros::Time currentTime;
@@ -25,33 +31,66 @@ double vx = 0;
 double vy = 0;
 double vtheta = 0;
 
+// Used to form the Arduino commands
 const char MOTOR_LEFT = 'l';
 const char MOTOR_RIGHT = 'r';
 const char MOTOR_FORWARD = 'f';
 const char MOTOR_BACKWARD = 'b';
 const char MOTOR_STOP = 's';
 
-void setDrive(const char motor, const char direction, const float spd = 0f)
+bool initTty()
 {
-	tty << 'd' << motor << direction;
-	if(direction != MOTOR_STOP) {
-		tty << spd * 256;
+	// http://timmurphy.org/2009/08/04/baud-rate-and-other-serial-comm-settings-in-c/
+	//tty.open("/dev/ttyACM0", std::fstream::in | std::fstream::out | std::fstream::app);
+	/*if(!tty.is_open()) {
+		ROS_INFO("Couldn't open /dev/ttyACM0. Is the Arduino plugged in?");
+		std::cerr << "Couldn't open /dev/ttyACM0. Is the Arduino plugged in?\n" << std::flush;
+		ros::shutdown();
+		return false;
 	}
-	tty << std::endl;
+	tty << std::hex;*/
+
+	int ttyFd = open("/dev/ttyACM0", O_RDWR);
+	if(ttyFd < 0) {
+		ROS_INFO("Couldn't open /dev/ttyACM0.");
+		std::cerr << "Couldn't open /dev/ttyACM0." << std::flush;
+	}
+	struct termios settings;
+	tcgetattr(ttyFd, &settings);
+	cfsetospeed(&settings, B115200);
+	tcsetattr(ttyFd, TCSANOW, &settings);
+	tcflush(ttyFd, TCOFLUSH);
+	tty = fdopen(ttyFd, "rw");
+	return true;
 }
 
-void setRotation(const char motor, const char direction, const float spd = 0f)
+void setDrive(const char motor, const char direction, const float spd = 0.0f)
 {
-	tty << 'r' << motor << direction;
+	std::stringstream ss;
+	ss << 'd' << motor << direction;
 	if(direction != MOTOR_STOP) {
-		tty << spd * 256;
+		ss << std::hex << (int)(spd * 255);
 	}
-	tty << std::endl;
+	ss << std::endl;
+	const char* output = ss.str().c_str();
+	fprintf(tty, "%s", output);
+	ROS_INFO("%s", output);
+}
+
+void setRotation(const char motor, const char direction, const float spd = 0.0f)
+{
+	std::stringstream ss;
+	ss << 'r' << motor << direction;
+	if(direction != MOTOR_STOP) {
+		ss << std::hex << (int)(spd * 255);
+	}
+	ss << std::endl;
+	const char* output = ss.str().c_str();
+	fprintf(tty, "%s", output);
+	ROS_INFO("%s", output);
 }
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
-	//ROS_INFO("%f", msg.linear.x);
-
 	// Store odometry input values
 	lastTime = currentTime;
 	currentTime = ros::Time::now();
@@ -143,26 +182,24 @@ int main(int argc, char **argv) {
 	ros::NodeHandle n;
 	currentTime = ros::Time::now();
 	lastTime = ros::Time::now();
-
-	tty.open("/dev/ttyACM0", std::fstream::in | std::fstream::out | std::fstream::app);
-	if(!tty.is_open()) {
-		ROS_INFO("Couldn't open /dev/ttyACM0. Is the Arduino plugged in?");
+	if(!initTty()) {
 		return 1;
 	}
-	tty << std::hex;
+
 	// Just to make sure we're not going anywhere...
 	setDrive(MOTOR_LEFT, MOTOR_STOP);
+setDrive(MOTOR_LEFT, MOTOR_FORWARD, 1.0);
 	setDrive(MOTOR_RIGHT, MOTOR_STOP);
 	setRotation(MOTOR_LEFT, MOTOR_STOP);
 	setRotation(MOTOR_RIGHT, MOTOR_STOP);
 
 	// This is correct - we're borrowing the turtle's topics
-	ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
+	//ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
 	odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
 	odomBroadcaster = boost::make_shared<tf::TransformBroadcaster>();
 	ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/2.0/*2 Hz*/), publishOdometry);
 	ROS_INFO("enginecontrol up and running.");
 	ros::spin();
-	tty.close();
+	fclose(tty);
 	return 0;
 }
