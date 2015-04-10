@@ -25,6 +25,30 @@ double vx = 0;
 double vy = 0;
 double vtheta = 0;
 
+const char MOTOR_LEFT = 'l';
+const char MOTOR_RIGHT = 'r';
+const char MOTOR_FORWARD = 'f';
+const char MOTOR_BACKWARD = 'b';
+const char MOTOR_STOP = 's';
+
+void setDrive(const char motor, const char direction, const float spd = 0f)
+{
+	tty << 'd' << motor << direction;
+	if(direction != MOTOR_STOP) {
+		tty << spd * 256;
+	}
+	tty << std::endl;
+}
+
+void setRotation(const char motor, const char direction, const float spd = 0f)
+{
+	tty << 'r' << motor << direction;
+	if(direction != MOTOR_STOP) {
+		tty << spd * 256;
+	}
+	tty << std::endl;
+}
+
 void velocityCallback(const geometry_msgs::Twist& msg) {
 	//ROS_INFO("%f", msg.linear.x);
 
@@ -43,28 +67,28 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	leftSpd -= msg.angular.z;
 	rightSpd += msg.angular.z;
 	// Determine rotation directions
-	char leftDir = leftSpd > 0 ? 'b' : 'f';
-	char rightDir = rightSpd > 0 ? 'f' : 'b';
+	char leftDir = leftSpd > 0 ? MOTOR_BACKWARD : MOTOR_FORWARD;
+	char rightDir = rightSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	// Map [-1, 1] -> [0, 1] as we've extracted the directional component
 	leftSpd = leftSpd < 0 ? leftSpd * -1.0 : leftSpd;
 	rightSpd = rightSpd < 0 ? rightSpd * -1.0 : rightSpd;
 	leftSpd = min(1.0, max(0.0, leftSpd));
 	rightSpd = min(1.0, max(0.0, rightSpd));
 	// Apply!
-	tty << "dl" << leftDir  << leftSpd  * 256 << std::endl;
-	tty << "dr" << rightDir << rightSpd * 256 << std::endl;
+	setDrive(MOTOR_LEFT, leftDir, leftSpd);
+	setDrive(MOTOR_RIGHT, rightDir, rightSpd);
 
 	// Wheel disc rotation
 	double leftRotSpd = msg.angular.y;
 	double rightRotSpd = msg.angular.y;
-	char leftRotDir = leftRotSpd > 0 ? 'b' : 'f';
-	char rightRotDir = rightRotSpd > 0 ? 'f' : 'b';
+	char leftRotDir = leftRotSpd > 0 ? MOTOR_BACKWARD : MOTOR_FORWARD;
+	char rightRotDir = rightRotSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	leftRotSpd = leftRotSpd < 0 ? leftRotSpd * -1.0 : leftRotSpd;
 	rightRotSpd = rightRotSpd < 0 ? rightRotSpd * -1.0 : rightRotSpd;
 	leftRotSpd = min(1.0, max(0.0, leftRotSpd));
 	rightRotSpd = min(1.0, max(0.0, rightRotSpd));
-	tty << "rl" << leftRotDir  << leftRotSpd  * 256 << std::endl;
-	tty << "rr" << rightRotDir << rightRotSpd * 256 << std::endl;
+	setRotation(MOTOR_LEFT, leftRotDir, leftRotSpd);
+	setRotation(MOTOR_RIGHT, rightRotDir, rightRotSpd);
 }
 
 void publishOdometry(const ros::TimerEvent&) {
@@ -123,8 +147,14 @@ int main(int argc, char **argv) {
 	tty.open("/dev/ttyACM0", std::fstream::in | std::fstream::out | std::fstream::app);
 	if(!tty.is_open()) {
 		ROS_INFO("Couldn't open /dev/ttyACM0. Is the Arduino plugged in?");
+		return 1;
 	}
 	tty << std::hex;
+	// Just to make sure we're not going anywhere...
+	setDrive(MOTOR_LEFT, MOTOR_STOP);
+	setDrive(MOTOR_RIGHT, MOTOR_STOP);
+	setRotation(MOTOR_LEFT, MOTOR_STOP);
+	setRotation(MOTOR_RIGHT, MOTOR_STOP);
 
 	// This is correct - we're borrowing the turtle's topics
 	ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
