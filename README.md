@@ -90,6 +90,7 @@ Example setup
 
 * Arduino Mega 2560
 * Accessible via */dev/ttyACM0*, user has to be in group *dialout*
+* Eclipse workspace in */enginecontrol*, you need to run *setup_enginecontrol.sh* to get dependencies
 
 Mapping/Odometry
 ----------------
