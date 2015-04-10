@@ -32,7 +32,7 @@ If you want to see images please click on the images folder or the following lin
 * we will install the rotating platform for the lidar sensor 
 * we will add some code for automatically movement
 
-Build Workspace
+Build ROS Workspace
 ---------------
 1. Install Ubuntu (build with 14.04 LTS)
 1. Install ROS Indigo stuff (ROS Version >= Groovy necessary because of catkin workspace management) as in the [installation manual](http://wiki.ros.org/hydro/Installation/Ubuntu). You need all the basic libs (*ros-indigo-desktop*), *ros-indigo-ros-tutorials*, *libsdl1.2-dev*, *build-essential*, *ros-indigo-tf*, *ros-indigo-tf2* and *ros-indigo-tf2-geometry-msgs*.
@@ -59,22 +59,6 @@ Startup Instructions
 *Note:* It is recommended to either manually start a roscore on hmmwv first or let hmmwv.launch start one for you _on that computer_.
 
 *Note 2:* This assumes you have a working ros installation and built our robot code successfully.
-
-BBB GPIO Zen
-------------
-
-First of all, the PWM pins must be enabled by adding an argument to the kernel command line in uEnv.txt on the Bone's boot partition (wth?!): `optargs=capemgr.enable_partno=BB-BONE-PWMT`. In the following, $pin refers to pin numbers as used by the kernel. Mappings for the pins we use are available in the `Pin` enum in gpio.h.
-
-Each used pin must be exported before first usage and it's direction needs to be set (in/out):
-```
-echo $pin > /sys/class/gpio/export
-echo "out" > /sys/class/gpio/gpio/$pin/direction
-```
-Now the pin value (binary) can be set arbitrarily:
-```
-echo 1 > /sys/class/gpio/gpio/$pin/value
-echo 0 > /sys/class/gpio/gpio/$pin/value
-```
 
 Example setup
 -------------
