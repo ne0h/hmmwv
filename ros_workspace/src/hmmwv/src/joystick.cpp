@@ -1,11 +1,22 @@
 #include "joystick.hpp"
 #include <stdexcept>
 
-Joystick::Joystick() {
+Joystick::Joystick() :
+	m_initialized(false) {
+}
+
+Joystick::~Joystick() {
+}
+
+bool Joystick::init() {
 	SDL_Init(SDL_INIT_JOYSTICK);
 	int num_joysticks = SDL_NumJoysticks();
 	if (num_joysticks < 1) {
 		throw std::runtime_error("No joysticks found!");
+	}
+
+	if(!num_joysticks) {
+		return false;
 	}
 
 	// take first device that appears to be a joystick
@@ -16,24 +27,28 @@ Joystick::Joystick() {
 		if (SDL_JoystickNumAxes(tmpStick) > 2) {
 			m_joystick = tmpStick;
 			m_name = SDL_JoystickName(i);
-
 			break;
 		}
 	}
 
 	SDL_JoystickEventState(SDL_ENABLE);
 	SDL_JoystickEventState(SDL_QUERY);
-}
-
-Joystick::~Joystick() {
-
+	m_initialized = true;
+	return true;
 }
 
 std::string Joystick::getName() {
+	if(!m_initialized) {
+		throw std::runtime_error("not initialized!");
+	}
 	return m_name;
 }
 
 JoystickEvent Joystick::getEvent() {
+	if(!m_initialized) {
+		throw std::runtime_error("not initialized!");
+	}
+
 	SDL_Event event;
 	std::vector<bool>  buttons;
 	std::vector<short> axis;
