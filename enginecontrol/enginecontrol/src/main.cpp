@@ -81,8 +81,20 @@ void setup() {
 	Serial.begin(BAUDRATE);
 	buffer_pointer = 0;
 
-	pinMode(DRIVE_LEFT_EN, OUTPUT);
-	pinMode(DRIVE_LEFT_DIR, OUTPUT);
+	pinMode(DRIVE_LEFT_EN,   OUTPUT);
+	pinMode(DRIVE_LEFT_DIR,  OUTPUT);
+	pinMode(DRIVE_RIGHT_EN,  OUTPUT);
+	pinMode(DRIVE_RIGHT_DIR, OUTPUT);
+
+	// init all output pins with 0
+
+	digitalWrite(DRIVE_LEFT_EN, LOW);
+	digitalWrite(DRIVE_LEFT_DIR, LOW);
+	analogWrite(DRIVE_LEFT_SPD, 0);
+
+	digitalWrite(DRIVE_RIGHT_EN, LOW);
+	digitalWrite(DRIVE_RIGHT_DIR, LOW);
+	analogWrite(DRIVE_RIGHT_SPD, 0);
 }
 
 void loop() {
