@@ -1,7 +1,15 @@
 #include <Arduino.h>
 
-#define BAUDRATE			115200
+#define BAUDRATE		115200
 #define BUFFER_LENGTH 	16
+
+#define DRIVE_LEFT_EN	37
+#define DRIVE_LEFT_DIR	36
+#define DRIVE_LEFT_SPD	2
+
+#define DRIVE_RIGHT_EN	35
+#define DRIVE_RIGHT_DIR	34
+#define DRIVE_RIGHT_SPD	3
 
 char buffer[BUFFER_LENGTH];
 uint8_t buffer_pointer;
@@ -16,9 +24,65 @@ void uart_prints(char input[], const uint8_t length) {
 	Serial.print('\n');
 }
 
+void cmd() {
+	char cmd[3];
+	memcpy(cmd, buffer, 3);
+
+	/**
+	 * drive engine left side
+	 */
+
+	// forward
+	if (strncmp(cmd, "dlf", 3) == 0) {
+		digitalWrite(DRIVE_LEFT_EN, HIGH);
+		digitalWrite(DRIVE_LEFT_DIR, HIGH);
+		analogWrite(DRIVE_LEFT_SPD, buffer[3]);
+
+	// backward
+	} else if (strncmp(cmd, "dlb", 3) == 0) {
+		digitalWrite(DRIVE_LEFT_EN, HIGH);
+		digitalWrite(DRIVE_LEFT_DIR, LOW);
+		analogWrite(DRIVE_LEFT_SPD, buffer[3]);
+
+	// stop
+	} else if (strncmp(cmd, "dls", 3) == 0) {
+		digitalWrite(DRIVE_LEFT_EN, LOW);
+
+	/**
+	 * drive engine right side
+	 */
+
+	// forward
+	} else if (strncmp(cmd, "drf", 3) == 0) {
+		digitalWrite(DRIVE_RIGHT_EN, HIGH);
+		digitalWrite(DRIVE_RIGHT_DIR, HIGH);
+		analogWrite(DRIVE_RIGHT_SPD, buffer[3]);
+
+	// backward
+	} else if (strncmp(cmd, "drb", 3) == 0) {
+		digitalWrite(DRIVE_RIGHT_EN, HIGH);
+		digitalWrite(DRIVE_RIGHT_DIR, LOW);
+		analogWrite(DRIVE_RIGHT_SPD, buffer[3]);
+
+	// stop
+	} else if (strncmp(cmd, "drs", 3) == 0) {
+		digitalWrite(DRIVE_RIGHT_EN, LOW);
+
+	/**
+	 * wrong cmd
+	 */
+	} else {
+		Serial.print("invalid commands");
+		uart_prints(cmd, 3);
+	}
+}
+
 void setup() {
 	Serial.begin(BAUDRATE);
 	buffer_pointer = 0;
+
+	pinMode(DRIVE_LEFT_EN, OUTPUT);
+	pinMode(DRIVE_LEFT_DIR, OUTPUT);
 }
 
 void loop() {
@@ -28,10 +92,7 @@ void loop() {
 		buffer[buffer_pointer] = c;
 
 		if (c == '\n') {
-			Serial.print("complete:");
-			Serial.print(buffer_pointer);
-			Serial.print(" ");
-			uart_prints(buffer, buffer_pointer);
+			cmd();
 			buffer_pointer = 0;
 		} else {
 			buffer_pointer++;
