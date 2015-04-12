@@ -1,18 +1,19 @@
 #include <Arduino.h>
 
-#define BAUDRATE		115200
-#define BUFFER_LENGTH 	16
+const uint32_t	BAUDRATE		=	115200;
+const uint8_t	BUFFER_LENGTH	=	16;
 
-#define DRIVE_LEFT_EN	37
-#define DRIVE_LEFT_DIR	36
-#define DRIVE_LEFT_SPD	2
+const uint8_t	DRIVE_LEFT_EN	=	37;
+const uint8_t	DRIVE_LEFT_DIR	=	36;
+const uint8_t	DRIVE_LEFT_SPD	=	2;
 
-#define DRIVE_RIGHT_EN	35
-#define DRIVE_RIGHT_DIR	34
-#define DRIVE_RIGHT_SPD	3
+const uint8_t	DRIVE_RIGHT_EN	=	35;
+const uint8_t	DRIVE_RIGHT_DIR =	34;
+const uint8_t	DRIVE_RIGHT_SPD	=	3;
 
 char buffer[BUFFER_LENGTH];
 uint8_t buffer_pointer;
+bool cmd_available;
 
 void uart_prints(char input[], const uint8_t length) {
 	uint8_t i = 0;
@@ -80,6 +81,7 @@ void cmd() {
 void setup() {
 	Serial.begin(BAUDRATE);
 	buffer_pointer = 0;
+	cmd_available  = false;
 
 	pinMode(DRIVE_LEFT_EN,   OUTPUT);
 	pinMode(DRIVE_LEFT_DIR,  OUTPUT);
@@ -99,7 +101,15 @@ void setup() {
 
 void loop() {
 
-	if (Serial.available()) {
+	if (cmd_available) {
+		cmd_available = false;
+		cmd();
+	}
+
+}
+
+void serialEvent() {
+	while (Serial.available()) {
 		const char c = Serial.read();
 		buffer[buffer_pointer] = c;
 
@@ -113,7 +123,7 @@ void loop() {
 		// check for buffer overflows
 		if (buffer_pointer >= BUFFER_LENGTH) {
 			buffer_pointer = 0;
+			cmd_available  = true;
 		}
 	}
-
 }
