@@ -8,7 +8,6 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
-#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -17,7 +16,7 @@ using namespace std;
 // A serial interface used to send commands to the Arduino that controls
 // the motor controllers. (Yeah, recursion!)
 //std::fstream tty;
-FILE* tty;
+int tty;
 
 // for odometry
 ros::Time currentTime;
@@ -38,29 +37,38 @@ const char MOTOR_FORWARD = 'f';
 const char MOTOR_BACKWARD = 'b';
 const char MOTOR_STOP = 's';
 
+// The motors are stopped (not just set to speed 0.0) below this input speed.
+const float STOP_THRESHOLD = 0.01f;
+
 bool initTty()
 {
 	// http://timmurphy.org/2009/08/04/baud-rate-and-other-serial-comm-settings-in-c/
-	//tty.open("/dev/ttyACM0", std::fstream::in | std::fstream::out | std::fstream::app);
-	/*if(!tty.is_open()) {
-		ROS_INFO("Couldn't open /dev/ttyACM0. Is the Arduino plugged in?");
-		std::cerr << "Couldn't open /dev/ttyACM0. Is the Arduino plugged in?\n" << std::flush;
-		ros::shutdown();
+	tty = open("/dev/ttyACM0", O_RDWR | O_NOCTTY/* | O_NDELAY*/);
+	if(tty < 0) {
+		perror("open(\"/dev/ttyACM0\")");
 		return false;
 	}
-	tty << std::hex;*/
-
-	int ttyFd = open("/dev/ttyACM0", O_RDWR);
-	if(ttyFd < 0) {
-		ROS_INFO("Couldn't open /dev/ttyACM0.");
-		std::cerr << "Couldn't open /dev/ttyACM0." << std::flush;
-	}
 	struct termios settings;
-	tcgetattr(ttyFd, &settings);
+	tcgetattr(tty, &settings);
 	cfsetospeed(&settings, B115200);
-	tcsetattr(ttyFd, TCSANOW, &settings);
-	tcflush(ttyFd, TCOFLUSH);
-	tty = fdopen(ttyFd, "rw");
+	cfsetispeed(&settings, B0 /*same as output*/);
+	settings.c_cflag &= ~PARENB;
+	settings.c_cflag &= ~CSTOPB;
+	settings.c_cflag &= ~CSIZE;
+	settings.c_cflag |= CS8;
+	settings.c_cflag &= ~CRTSCTS;
+	settings.c_cflag &= ~HUPCL;
+	settings.c_cflag |= CREAD | CLOCAL;
+	settings.c_iflag &= ~(IXON | IXOFF | IXANY);
+	settings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+	settings.c_oflag &= ~OPOST;
+	settings.c_cc[VMIN]  = 0;
+	settings.c_cc[VTIME] = 0;
+	if(tcsetattr(tty, TCSANOW, &settings) != 0) {
+		perror("tcsetattr");
+		return false;
+	}
+	tcflush(tty, TCOFLUSH);
 	return true;
 }
 
@@ -69,11 +77,11 @@ void setDrive(const char motor, const char direction, const float spd = 0.0f)
 	std::stringstream ss;
 	ss << 'd' << motor << direction;
 	if(direction != MOTOR_STOP) {
-		ss << std::hex << (int)(spd * 255);
+		ss << std::hex << (int8_t)(spd * 255);
 	}
 	ss << std::endl;
 	const char* output = ss.str().c_str();
-	fprintf(tty, "%s", output);
+	write(tty, output, ss.str().length());
 	ROS_INFO("%s", output);
 }
 
@@ -82,12 +90,12 @@ void setRotation(const char motor, const char direction, const float spd = 0.0f)
 	std::stringstream ss;
 	ss << 'r' << motor << direction;
 	if(direction != MOTOR_STOP) {
-		ss << std::hex << (int)(spd * 255);
+		ss << std::hex << (int8_t)(spd * 255);
 	}
 	ss << std::endl;
 	const char* output = ss.str().c_str();
-	fprintf(tty, "%s", output);
-	ROS_INFO("%s", output);
+	write(tty, output, ss.str().length());
+	//ROS_INFO("%s", output);
 }
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
@@ -106,13 +114,20 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	leftSpd -= msg.angular.z;
 	rightSpd += msg.angular.z;
 	// Determine rotation directions
-	char leftDir = leftSpd > 0 ? MOTOR_BACKWARD : MOTOR_FORWARD;
+	char leftDir = leftSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char rightDir = rightSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	// Map [-1, 1] -> [0, 1] as we've extracted the directional component
 	leftSpd = leftSpd < 0 ? leftSpd * -1.0 : leftSpd;
 	rightSpd = rightSpd < 0 ? rightSpd * -1.0 : rightSpd;
 	leftSpd = min(1.0, max(0.0, leftSpd));
 	rightSpd = min(1.0, max(0.0, rightSpd));
+	// Stop the motors when stopping
+	if(leftSpd < STOP_THRESHOLD) {
+		leftDir = MOTOR_STOP;
+	}
+	if(rightSpd < STOP_THRESHOLD) {
+		rightDir = MOTOR_STOP;
+	}
 	// Apply!
 	setDrive(MOTOR_LEFT, leftDir, leftSpd);
 	setDrive(MOTOR_RIGHT, rightDir, rightSpd);
@@ -120,12 +135,18 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	// Wheel disc rotation
 	double leftRotSpd = msg.angular.y;
 	double rightRotSpd = msg.angular.y;
-	char leftRotDir = leftRotSpd > 0 ? MOTOR_BACKWARD : MOTOR_FORWARD;
+	char leftRotDir = leftRotSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char rightRotDir = rightRotSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	leftRotSpd = leftRotSpd < 0 ? leftRotSpd * -1.0 : leftRotSpd;
 	rightRotSpd = rightRotSpd < 0 ? rightRotSpd * -1.0 : rightRotSpd;
 	leftRotSpd = min(1.0, max(0.0, leftRotSpd));
 	rightRotSpd = min(1.0, max(0.0, rightRotSpd));
+	if(leftRotSpd < STOP_THRESHOLD) {
+		leftRotDir = MOTOR_STOP;
+	}
+	if(rightRotSpd < STOP_THRESHOLD) {
+		rightRotDir = MOTOR_STOP;
+	}
 	setRotation(MOTOR_LEFT, leftRotDir, leftRotSpd);
 	setRotation(MOTOR_RIGHT, rightRotDir, rightRotSpd);
 }
@@ -188,18 +209,17 @@ int main(int argc, char **argv) {
 
 	// Just to make sure we're not going anywhere...
 	setDrive(MOTOR_LEFT, MOTOR_STOP);
-setDrive(MOTOR_LEFT, MOTOR_FORWARD, 1.0);
 	setDrive(MOTOR_RIGHT, MOTOR_STOP);
 	setRotation(MOTOR_LEFT, MOTOR_STOP);
 	setRotation(MOTOR_RIGHT, MOTOR_STOP);
 
 	// This is correct - we're borrowing the turtle's topics
-	//ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
+	ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
 	odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
 	odomBroadcaster = boost::make_shared<tf::TransformBroadcaster>();
 	ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/2.0/*2 Hz*/), publishOdometry);
 	ROS_INFO("enginecontrol up and running.");
 	ros::spin();
-	fclose(tty);
+	close(tty);
 	return 0;
 }
