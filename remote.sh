@@ -1,1 +1,0 @@
-rosrun hmmwv remotecontrol
