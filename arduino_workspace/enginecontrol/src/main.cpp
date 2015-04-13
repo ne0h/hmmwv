@@ -1,16 +1,6 @@
 #include <Arduino.h>
 
-const uint32_t	BAUDRATE		=	115200;
-const uint8_t	BUFFER_LENGTH	=	16;
-const uint8_t	CMD_LENGTH		=	4;
-
-const uint8_t	DRIVE_LEFT_EN	=	37;
-const uint8_t	DRIVE_LEFT_DIR	=	36;
-const uint8_t	DRIVE_LEFT_SPD	=	2;
-
-const uint8_t	DRIVE_RIGHT_EN	=	35;
-const uint8_t	DRIVE_RIGHT_DIR =	34;
-const uint8_t	DRIVE_RIGHT_SPD	=	3;
+#include "constants.h"
 
 char buffer[BUFFER_LENGTH];
 uint8_t buffer_pointer;
@@ -35,19 +25,19 @@ void cmd() {
 	 */
 
 	// forward
-	if (strncmp(cmd, "sdlf", CMD_LENGTH) == 0) {
+	if (strncmp(cmd, CMD_SET_DRIVE_LEFT_FORWARD, CMD_LENGTH) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, HIGH);
 		digitalWrite(DRIVE_LEFT_DIR, HIGH);
 		analogWrite(DRIVE_LEFT_SPD, buffer[3]);
 
 	// backward
-	} else if (strncmp(cmd, "sdlb", CMD_LENGTH) == 0) {
+	} else if (strncmp(cmd, CMD_SET_DRIVE_LEFT_BACKWARD, CMD_LENGTH) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, HIGH);
 		digitalWrite(DRIVE_LEFT_DIR, LOW);
 		analogWrite(DRIVE_LEFT_SPD, buffer[3]);
 
 	// stop
-	} else if (strncmp(cmd, "sdls", 4) == 0) {
+	} else if (strncmp(cmd, CMD_SET_DRIVE_LEFT_STOP, 4) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, LOW);
 
 	/**
@@ -55,19 +45,19 @@ void cmd() {
 	 */
 
 	// forward
-	} else if (strncmp(cmd, "sdrf", 4) == 0) {
+	} else if (strncmp(cmd, CMD_SET_DRIVE_RIGHT_FORWARD, 4) == 0) {
 		digitalWrite(DRIVE_RIGHT_EN, HIGH);
 		digitalWrite(DRIVE_RIGHT_DIR, HIGH);
 		analogWrite(DRIVE_RIGHT_SPD, buffer[3]);
 
 	// backward
-	} else if (strncmp(cmd, "sdrb", 4) == 0) {
+	} else if (strncmp(cmd, CMD_SET_DRIVE_RIGHT_BACKWARD, 4) == 0) {
 		digitalWrite(DRIVE_RIGHT_EN, HIGH);
 		digitalWrite(DRIVE_RIGHT_DIR, LOW);
 		analogWrite(DRIVE_RIGHT_SPD, buffer[3]);
 
 	// stop
-	} else if (strncmp(cmd, "sdrs", 4) == 0) {
+	} else if (strncmp(cmd, CMD_SET_DRIVE_RIGHT_STOP, 4) == 0) {
 		digitalWrite(DRIVE_RIGHT_EN, LOW);
 
 	/**
