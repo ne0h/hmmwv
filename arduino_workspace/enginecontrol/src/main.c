@@ -2,6 +2,7 @@
 
 const uint32_t	BAUDRATE		=	115200;
 const uint8_t	BUFFER_LENGTH	=	16;
+const uint8_t	CMD_LENGTH		=	4;
 
 const uint8_t	DRIVE_LEFT_EN	=	37;
 const uint8_t	DRIVE_LEFT_DIR	=	36;
@@ -26,27 +27,27 @@ void uart_prints(char input[], const uint8_t length) {
 }
 
 void cmd() {
-	char cmd[3];
-	memcpy(cmd, buffer, 3);
+	char cmd[CMD_LENGTH];
+	memcpy(cmd, buffer, CMD_LENGTH);
 
 	/**
 	 * drive engine left side
 	 */
 
 	// forward
-	if (strncmp(cmd, "dlf", 3) == 0) {
+	if (strncmp(cmd, "sdlf", CMD_LENGTH) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, HIGH);
 		digitalWrite(DRIVE_LEFT_DIR, HIGH);
 		analogWrite(DRIVE_LEFT_SPD, buffer[3]);
 
 	// backward
-	} else if (strncmp(cmd, "dlb", 3) == 0) {
+	} else if (strncmp(cmd, "sdlb", CMD_LENGTH) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, HIGH);
 		digitalWrite(DRIVE_LEFT_DIR, LOW);
 		analogWrite(DRIVE_LEFT_SPD, buffer[3]);
 
 	// stop
-	} else if (strncmp(cmd, "dls", 3) == 0) {
+	} else if (strncmp(cmd, "sdls", 4) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, LOW);
 
 	/**
@@ -54,19 +55,19 @@ void cmd() {
 	 */
 
 	// forward
-	} else if (strncmp(cmd, "drf", 3) == 0) {
+	} else if (strncmp(cmd, "sdrf", 4) == 0) {
 		digitalWrite(DRIVE_RIGHT_EN, HIGH);
 		digitalWrite(DRIVE_RIGHT_DIR, HIGH);
 		analogWrite(DRIVE_RIGHT_SPD, buffer[3]);
 
 	// backward
-	} else if (strncmp(cmd, "drb", 3) == 0) {
+	} else if (strncmp(cmd, "sdrb", 4) == 0) {
 		digitalWrite(DRIVE_RIGHT_EN, HIGH);
 		digitalWrite(DRIVE_RIGHT_DIR, LOW);
 		analogWrite(DRIVE_RIGHT_SPD, buffer[3]);
 
 	// stop
-	} else if (strncmp(cmd, "drs", 3) == 0) {
+	} else if (strncmp(cmd, "sdrs", 4) == 0) {
 		digitalWrite(DRIVE_RIGHT_EN, LOW);
 
 	/**
@@ -74,7 +75,7 @@ void cmd() {
 	 */
 	} else {
 		Serial.print("invalid commands");
-		uart_prints(cmd, 3);
+		uart_prints(cmd, CMD_LENGTH);
 	}
 }
 
