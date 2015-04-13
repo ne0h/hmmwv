@@ -36,12 +36,18 @@ void updateRemote(const TimerEvent&) {
 	stick2y = min(max(stick2y, -1.0), 1.0);
 
 	// SPEEED-BUTTON!
-	if (!buttons.at(1)) {
+	if (!buttons.at(0)) {
 		angular *= 0.25;
 		linear *= 0.25;
+	} else {
+		// Safety measures...
+		angular *= 0.75;
+		linear *= 0.75;
 	}
-	if (!buttons.at(2)) {
-		stick2y *= 0.1; // Scale wheel rotation nice and slow
+	if (!buttons.at(1)) {
+		stick2y *= 0.2; // Scale wheel rotation nice and slow
+	} else {
+		stick2y *= 0.5;
 	}
 
 	if (linear < 0) {
