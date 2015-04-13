@@ -11,11 +11,7 @@ Joystick::~Joystick() {
 bool Joystick::init() {
 	SDL_Init(SDL_INIT_JOYSTICK);
 	int num_joysticks = SDL_NumJoysticks();
-	if (num_joysticks < 1) {
-		throw std::runtime_error("No joysticks found!");
-	}
-
-	if(!num_joysticks) {
+	if(num_joysticks < 1) {
 		return false;
 	}
 

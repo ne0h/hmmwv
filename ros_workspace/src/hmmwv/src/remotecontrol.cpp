@@ -59,7 +59,6 @@ void updateRemote(const TimerEvent&) {
 int main(int argc, char **argv) {
 	// init sdl and connect to controller
 	SDL_Init(SDL_INIT_JOYSTICK);
-	Joystick joystick;
 	if(!joystick.init()) {
 		cout << "Could not find a joystick!\n";
 		return 1;
