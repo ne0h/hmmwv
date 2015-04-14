@@ -1,16 +1,15 @@
 #include <Arduino.h>
 
 #include "constants.h"
+#include "monitor.hpp"
 
 char buffer[BUFFER_LENGTH];
 uint8_t buffer_pointer;
 bool cmd_available;
 
 void uart_prints(char input[], const uint8_t length) {
-	uint8_t i = 0;
-	while (i < length) {
+	for (uint8_t i = 0; i < length; i++) {
 		Serial.print(input[i]);
-		i++;
 	}
 
 	Serial.print('\n');
@@ -70,6 +69,8 @@ void cmd() {
 }
 
 void setup() {
+	monitor_init(115200);
+
 	Serial.begin(BAUDRATE);
 	buffer_pointer = 0;
 	cmd_available  = false;
@@ -88,6 +89,8 @@ void setup() {
 	digitalWrite(DRIVE_RIGHT_EN, LOW);
 	digitalWrite(DRIVE_RIGHT_DIR, LOW);
 	analogWrite(DRIVE_RIGHT_SPD, 0);
+
+	monitor_write("pin modes set", 13);
 }
 
 void loop() {
