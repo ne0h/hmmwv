@@ -26,17 +26,17 @@ void cmd() {
 	// forward
 	if (strncmp(cmd, CMD_SET_DRIVE_LEFT_FORWARD, CMD_LENGTH) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, HIGH);
-		digitalWrite(DRIVE_LEFT_DIR, HIGH);
-		analogWrite(DRIVE_LEFT_SPD, buffer[3]);
+		digitalWrite(DRIVE_LEFT_DIR, LOW);
+		analogWrite(DRIVE_LEFT_SPD, buffer[4]);
 
 	// backward
 	} else if (strncmp(cmd, CMD_SET_DRIVE_LEFT_BACKWARD, CMD_LENGTH) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, HIGH);
-		digitalWrite(DRIVE_LEFT_DIR, LOW);
-		analogWrite(DRIVE_LEFT_SPD, buffer[3]);
+		digitalWrite(DRIVE_LEFT_DIR, HIGH);
+		analogWrite(DRIVE_LEFT_SPD, buffer[4]);
 
 	// stop
-	} else if (strncmp(cmd, CMD_SET_DRIVE_LEFT_STOP, 4) == 0) {
+	} else if (strncmp(cmd, CMD_SET_DRIVE_LEFT_STOP, CMD_LENGTH) == 0) {
 		digitalWrite(DRIVE_LEFT_EN, LOW);
 
 	/**
@@ -47,13 +47,13 @@ void cmd() {
 	} else if (strncmp(cmd, CMD_SET_DRIVE_RIGHT_FORWARD, 4) == 0) {
 		digitalWrite(DRIVE_RIGHT_EN, HIGH);
 		digitalWrite(DRIVE_RIGHT_DIR, HIGH);
-		analogWrite(DRIVE_RIGHT_SPD, buffer[3]);
+		analogWrite(DRIVE_RIGHT_SPD, buffer[4]);
 
 	// backward
 	} else if (strncmp(cmd, CMD_SET_DRIVE_RIGHT_BACKWARD, 4) == 0) {
 		digitalWrite(DRIVE_RIGHT_EN, HIGH);
 		digitalWrite(DRIVE_RIGHT_DIR, LOW);
-		analogWrite(DRIVE_RIGHT_SPD, buffer[3]);
+		analogWrite(DRIVE_RIGHT_SPD, buffer[4]);
 
 	// stop
 	} else if (strncmp(cmd, CMD_SET_DRIVE_RIGHT_STOP, 4) == 0) {
