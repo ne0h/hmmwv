@@ -15,7 +15,7 @@ using namespace std;
 
 // A serial interface used to send commands to the Arduino that controls
 // the motor controllers. (Yeah, recursion!)
-//std::fstream tty;
+// (C file descriptor)
 int tty;
 
 // for odometry
@@ -75,7 +75,7 @@ bool initTty()
 void setDrive(const char motor, const char direction, const float spd = 0.0f)
 {
 	std::stringstream ss;
-	ss << 'd' << motor << direction;
+	ss << "sd" << motor << direction;
 	if(direction != MOTOR_STOP) {
 		ss << std::hex << (int8_t)(spd * 255);
 	}
@@ -88,7 +88,7 @@ void setDrive(const char motor, const char direction, const float spd = 0.0f)
 void setRotation(const char motor, const char direction, const float spd = 0.0f)
 {
 	std::stringstream ss;
-	ss << 'r' << motor << direction;
+	ss << "sr" << motor << direction;
 	if(direction != MOTOR_STOP) {
 		ss << std::hex << (int8_t)(spd * 255);
 	}
