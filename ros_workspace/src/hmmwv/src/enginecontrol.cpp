@@ -100,11 +100,9 @@ void setRotation(const char motor, const char direction, const float spd = 0.0f)
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
 	// Store odometry input values
-	lastTime = currentTime;
-	currentTime = ros::Time::now();
-	vx = msg.linear.x;
-	vy = msg.linear.y;
-	vtheta = msg.angular.z * 10; // absolutely uneducated guess
+	vx = msg.linear.x * 1.164 /* m/s robot speed*/;
+	vy = msg.linear.y * 1.164 /*m/s*/;
+	vtheta = msg.angular.z * 1.732 /*rad/s*/ * 1.1;
 
 	// Tank-like steering (rotate around vehicle center)
 	// Set linear back/forward speed
@@ -147,14 +145,16 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	if(rightRotSpd < STOP_THRESHOLD) {
 		rightRotDir = MOTOR_STOP;
 	}
-	setRotation(MOTOR_LEFT, leftRotDir, leftRotSpd);
-	setRotation(MOTOR_RIGHT, rightRotDir, rightRotSpd);
+	//setRotation(MOTOR_LEFT, leftRotDir, leftRotSpd);
+	//setRotation(MOTOR_RIGHT, rightRotDir, rightRotSpd);
 }
 
 void publishOdometry(const ros::TimerEvent&) {
 	// Source: http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom
 	// Compute input values
 	double dt = (currentTime - lastTime).toSec();
+	lastTime = currentTime;
+	currentTime = ros::Time::now();
 	double dx = (vx * cos(theta) - vy * sin(theta)) * dt;
 	double dy = (vx * sin(theta) - vy * cos(theta)) * dt;
 	double dtheta = vtheta * dt;
