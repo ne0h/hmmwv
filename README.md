@@ -49,10 +49,11 @@ Startup Instructions
 --------------------
 
 1. Export a fitting ROS_MASTER_URI on all machines, f.e. `export ROS_MASTER_URI=http://hmmwv:11311`
+1. Consider setting ROS_IP or ROS_HOSTNAME as needed for the nodes to find each other.
 1. On hmmwv (the mini PC below that wood plate)
 	1. `roslaunch hmmwv hmmwv.launch`
-1. On the beagle
-	1. `roslaunch hmmwv engine.launch` (*Must* run as root!)
+	1. `roslaunch hmmwv engine.launch` (Executing user must be member of the `dialout` group.)
+		1. This node might be included in the hmmwv.launch file. Use at own risk.
 1. On the computer that has the controller plugged in
 	1. `roslaunch hmmwv remote.launch`
 
@@ -67,7 +68,7 @@ Example setup
 
 * hardware: Mini PC Gigabyte GB-BXCE-2955
 * tasks: WLAN access point, navigation
-* ros nodes: roscore, lms100
+* ros nodes: roscore, lms100, slam_gmapping, enginecontrol, some TFs
 * `ROS_MASTER_URI=http://hmmwv:11311` and `ROS_HOSTNAME=hmmwv`
 
 ### Arduino (engine controller)
