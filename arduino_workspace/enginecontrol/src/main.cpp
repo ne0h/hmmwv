@@ -7,6 +7,14 @@ char buffer[BUFFER_LENGTH];
 uint8_t buffer_pointer;
 bool cmd_available;
 
+// The motor monitor ISR counts ticks into this variable
+volatile uint8_t leftCurrentTicks = 0;
+volatile uint8_t rightCurrentTicks = 0;
+// Another timed ISR regularly copies the value of currentTicks into this
+// variable to make it available for reading via serial.
+volatile uint8_t leftAggregatedTicks = 0;
+volatile uint8_t rightAggregatedTicks = 0;
+
 void uart_prints(char input[], const uint8_t length) {
 	for (uint8_t i = 0; i < length; i++) {
 		Serial.print(input[i]);
@@ -68,6 +76,41 @@ void cmd() {
 	}
 }
 
+/*
+ * Interrupt Service Routine for the left drive motor monitor.
+ * Careful, this might be called at up to 500 Hz.
+ */
+void isr_drive_left_mnt()
+{
+	/*
+	 * Inside the attached function, delay() won't work and the value returned
+	 * by millis() will not increment. Serial data received while in the
+	 * function may be lost. You should declare as volatile any variables that
+	 * you modify within the attached function.
+	 */
+	leftCurrentTicks++;
+}
+
+/*
+ * Interrupt Service Routine for the right drive motor monitor.
+ * Careful, this might be called at up to 500 Hz.
+ */
+void isr_drive_right_mnt()
+{
+	rightCurrentTicks++;
+}
+
+/*
+ * ISR that makes current motor tick counts available for reading.
+ */
+void isr_drive_mnt_reset()
+{
+	leftAggregatedTicks = leftCurrentTicks;
+	leftCurrentTicks = 0;
+	rightAggregatedTicks = rightCurrentTicks;
+	rightCurrentTicks = 0;
+}
+
 void setup() {
 	monitor_init(115200);
 
@@ -91,6 +134,12 @@ void setup() {
 	analogWrite(DRIVE_RIGHT_SPD, 0);
 
 	monitor_write("pin modes set", 13);
+
+	// setup motor encoder listeners
+	attachInterrupt(DRIVE_LEFT_MNT, &isr_drive_left_mnt, RISING);
+	attachInterrupt(DRIVE_RIGHT_MNT, &isr_drive_right_mnt, RISING);
+	// If we had Timer3 available, we could do
+	//Timer3.attachInterrupt(&isr_drive_mnt_reset, 100000 /*µs = 10 Hz*/);
 }
 
 void loop() {
