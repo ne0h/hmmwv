@@ -25,6 +25,11 @@ void uart_print_success() {
 	Serial.print('\n');
 }
 
+void uart_print_error() {
+	Serial.print('x');
+	Serial.print('\n');
+}
+
 void cmd() {
 	char cmd[CMD_LENGTH];
 	memcpy(cmd, buffer, CMD_LENGTH);
@@ -90,6 +95,10 @@ void cmd() {
 	} else if (strncmp(cmd, CMD_GET_DRIVE_RIGHT_RATE, CMD_LENGTH) == 0) {
 		Serial.print(drive_right_mnt_cur);
 		Serial.print('\n');
+
+	// error
+	} else {
+		uart_print_error();
 	}
 
 }
