@@ -1,5 +1,7 @@
 <launch>
+<!--
 	<node name="enginecontrol" pkg="hmmwv" type="enginecontrol" output="screen" />
+-->
 	<node pkg="tf" type="static_transform_publisher" name="base_link_to_base_laser_link" args="0 0 0 0.0 0.0 0.0 /base_link /base_laser_link 100" />
 	<node pkg="tf" type="static_transform_publisher" name="base_laser_link_to_laser" args="-0.05 0.1 0.25 0.0 0.0 0.0 /base_laser_link /laser 100" />
 	<node name="gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/lms100/scan" output="screen">
@@ -11,6 +13,8 @@
 		<param name="linearUpdate" value="0.5" />
 		<param name="angularUpdate" value="0.5" />
 		<param name="temporalUpdate" value="-1.0" />
+		<!-- occupancy grid (map) resolution. default: 0.05 meters -->
+		<param name="delta" value="0.15" />
 	</node>
 	<node name="lms100" pkg="cob_sick_lms1xx" type="lms100">
 		<param name="host" value="192.168.1.2" />
