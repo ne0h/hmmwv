@@ -1,0 +1,16 @@
+obstacle_range: 2.5
+raytrace_range: 3.0
+# Robot size: roughly 0.5 x 0.5 meters
+footprint: [[0.25, 0.25], [0.25, -0.25], [-0.25, -0.25], [-0.25, 0.25]]
+#robot_radius: ir_of_robot
+inflation_radius: 0.55
+
+observation_sources: lms100
+
+laser_scan_sensor: {
+  sensor_frame: base_laser,
+  data_type: LaserScan,
+  topic: scan,
+  marking: true,
+  clearing: true
+}
