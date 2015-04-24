@@ -6,6 +6,10 @@ TrajectoryPlannerROS:
 
   acc_lim_th: 1.0
   acc_lim_x: 1.0
-  acc_lim_y: 1.0
 
-  holonomic_robot: true
+  # Differential-drive robot configuration
+  holonomic_robot: false
+  max_vel_y: 0.0
+  min_vel_y: 0.0
+  acc_lim_y: 0.0
+  vy_samples: 0
