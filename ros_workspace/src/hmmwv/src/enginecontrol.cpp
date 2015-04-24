@@ -21,19 +21,19 @@ int tty;
 std::stringstream ss;
 
 // for odometry
-// ros::Time currentTime;
-// ros::Time lastTime;
-// ros::Publisher odomPub;
-// boost::shared_ptr<tf::TransformBroadcaster> odomBroadcaster;
-// double x = 0;
-// double y = 0;
-// double theta = 0;
-// double vx = 0;
-// double vy = 0;
-// double vtheta = 0;
+ros::Time currentTime;
+ros::Time lastTime;
+ros::Publisher odomPub;
+boost::shared_ptr<tf::TransformBroadcaster> odomBroadcaster;
+double x = 0;
+double y = 0;
+double theta = 0;
+double vx = 0;
+double vy = 0;
+double vtheta = 0;
 // // direction cache (computed in velocityCallback, used for odometry)
-// int leftDirOdo = 1;
-// int rightDirOdo = 1;
+int leftDirOdo = 1;
+int rightDirOdo = 1;
 
 const double WHEEL_DIAMETER		= 0.155;
 const double WHEEL_OFFSET		= 0.9;//0.215;
@@ -168,7 +168,7 @@ float getSpeed(const char motor)
 	// Filter out division by zero and "stop" state
 	const double freq = (interval == 0 || interval == 1000000) ? 0 : 1000000 / interval;
 	// if(motor == MOTOR_RIGHT)
-		ROS_INFO("interval %c: %i freq: %f", motor, interval, freq);
+		// ROS_INFO("interval %c: %i freq: %f", motor, interval, freq);
 	// Return the resulting robot speed for this motor (m/s)
 	return freq * WHEEL_DIAMETER * M_PI / (3.0 * WHEEL_REDUCTION);
 }
@@ -186,8 +186,8 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	// at object orientation should be done to fix this.)
 	char leftDir = leftSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char rightDir = rightSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
-	// leftDirOdo = leftSpd > 0 ? 1 : -1;
-	// rightDirOdo = rightSpd > 0 ? 1 : -1;
+	leftDirOdo = leftSpd > 0 ? 1 : -1;
+	rightDirOdo = rightSpd > 0 ? 1 : -1;
 	// Map [-1, 1] -> [0, 1] as we've extracted the directional component
 	leftSpd = leftSpd < 0 ? leftSpd * -1.0 : leftSpd;
 	rightSpd = rightSpd < 0 ? rightSpd * -1.0 : rightSpd;
@@ -223,68 +223,82 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	setRotation(MOTOR_RIGHT, rightRotDir, rightRotSpd);
 }
 
-// void publishOdometry(const ros::TimerEvent&) {
+void publishOdometry(const ros::TimerEvent&) {
 // 	// Source: http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom
 // 	// Store odometry input values
-// 	// double leftSpd = getSpeed(MOTOR_LEFT) * leftDirOdo;
-// 	// double rightSpd = getSpeed(MOTOR_RIGHT) * rightDirOdo;
-// 	// vx = (leftSpd + rightSpd) / 2.0;
-// 	// vtheta = (rightSpd - leftSpd) / WHEEL_OFFSET;
+	double leftSpd = getSpeed(MOTOR_LEFT) * leftDirOdo;
+	double rightSpd = getSpeed(MOTOR_RIGHT) * rightDirOdo;
+	vx = (leftSpd + rightSpd) / 2.0;
+	// vtheta = (rightSpd - leftSpd) / WHEEL_OFFSET;
 
-// 	// Compute input values
-// 	// double dt = (currentTime - lastTime).toSec();
-// 	// lastTime = currentTime;
-// 	// currentTime = ros::Time::now();
-// 	// double dx = (vx * cos(theta) - vy * sin(theta)) * dt;
-// 	// double dy = (vx * sin(theta) - vy * cos(theta)) * dt;
-// 	// vtheta = (dx - dy) / WHEEL_OFFSET;
-// 	// double dtheta = vtheta * dt;
-// 	// x += dx;
-// 	// y += dy;
-// 	// theta += dtheta;
-// 	// ROS_INFO("vl: %f vr: %f vx: %f vtheta: %f", leftSpd, rightSpd, vx, vtheta);
+	// Compute input values
+	double dt = (currentTime - lastTime).toSec();
+	lastTime = currentTime;
+	currentTime = ros::Time::now();
+	double dx = (vx * cos(theta) - vy * sin(theta)) * dt;
+	double dy = (vx * sin(theta) - vy * cos(theta)) * dt;
+	vtheta = (dx - dy) / WHEEL_OFFSET;
+	double dtheta = vtheta * dt;
+	x += dx;
+	y += dy;
+	theta += dtheta;
+	// ROS_INFO("vl: %f vr: %f vx: %f vtheta: %f", leftSpd, rightSpd, vx, vtheta);
 
-// 	// Transform frame
-// 	//since all odometry is 6DOF we'll need a quaternion created from yaw
-// 	geometry_msgs::Quaternion odomQuat = tf::createQuaternionMsgFromYaw(theta);
+	// Transform frame
+	//since all odometry is 6DOF we'll need a quaternion created from yaw
+	geometry_msgs::Quaternion odomQuat = tf::createQuaternionMsgFromYaw(theta);
 
-// 	geometry_msgs::TransformStamped odomTrans;
-// 	odomTrans.header.stamp = currentTime;
-// 	odomTrans.header.frame_id = "odom";
-// 	odomTrans.child_frame_id = "base_link";
+	geometry_msgs::TransformStamped odomTrans;
+	odomTrans.header.stamp = currentTime;
+	odomTrans.header.frame_id = "odom";
+	odomTrans.child_frame_id = "base_link";
 
-// 	odomTrans.transform.translation.x = x;
-// 	odomTrans.transform.translation.y = y;
-// 	odomTrans.transform.translation.z = 0.0;
-// 	odomTrans.transform.rotation = odomQuat;
+	odomTrans.transform.translation.x = x;
+	odomTrans.transform.translation.y = y;
+	odomTrans.transform.translation.z = 0.0;
+	odomTrans.transform.rotation = odomQuat;
 
-// 	odomBroadcaster->sendTransform(odomTrans);
+	odomBroadcaster->sendTransform(odomTrans);
 
-// 	// Odometry message
-// 	nav_msgs::Odometry odom;
-// 	odom.header.stamp = currentTime;
-// 	odom.header.frame_id = "odom";
 
-// 	//set the position
-// 	odom.pose.pose.position.x = x;
-// 	odom.pose.pose.position.y = y;
-// 	odom.pose.pose.position.z = 0.0;
-// 	odom.pose.pose.orientation = odomQuat;
+	// Odometry message
+	nav_msgs::Odometry odom;
+	odom.header.stamp = currentTime;
+	odom.header.frame_id = "odom";
 
-// 	//set the velocity
-// 	odom.child_frame_id = "base_link";
-// 	odom.twist.twist.linear.x = vx;
-// 	odom.twist.twist.linear.y = vy;
-// 	odom.twist.twist.angular.z = vtheta;
+	//set the position
+	odom.pose.pose.position.x = x;
+	odom.pose.pose.position.y = y;
+	odom.pose.pose.position.z = 0.0;
+	odom.pose.pose.orientation = odomQuat;
 
-// 	odomPub.publish(odom);
-// }
+	//set the velocity
+	odom.child_frame_id = "base_link";
+	odom.twist.twist.linear.x = vx;
+	odom.twist.twist.linear.y = vy;
+	odom.twist.twist.angular.z = vtheta;
+
+	odomPub.publish(odom);
+
+	// Test TF
+	// <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" args="0.1 0.1 0.15 0.0 0.0 0.0 /base_link /laser 50" />
+	// geometry_msgs::Quaternion odomQuat = tf::createQuaternionMsgFromYaw(0.0);
+	// geometry_msgs::TransformStamped odomTrans;
+	// odomTrans.header.stamp = ros::Time::now();
+	// odomTrans.header.frame_id = "base_link";
+	// odomTrans.child_frame_id = "laser";
+	// odomTrans.transform.translation.x = 0.1;
+	// odomTrans.transform.translation.y = 0.1;
+	// odomTrans.transform.translation.z = 0.15;
+	// odomTrans.transform.rotation = odomQuat;
+	// odomBroadcaster->sendTransform(odomTrans);
+}
 
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "enginecontrol");
 	ros::NodeHandle n;
-	// currentTime = ros::Time::now();
-	// lastTime = ros::Time::now();
+	currentTime = ros::Time::now();
+	lastTime = ros::Time::now();
 	if(!initTty()) {
 		return 1;
 	}
@@ -297,9 +311,9 @@ int main(int argc, char **argv) {
 
 	// This is correct - we're borrowing the turtle's topics
 	ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
-	//odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
-	//odomBroadcaster = boost::make_shared<tf::TransformBroadcaster>();
-	//ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/2.0/*2 Hz*/), publishOdometry);
+	odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
+	odomBroadcaster = boost::make_shared<tf::TransformBroadcaster>();
+	ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/10.0/*10 Hz*/), publishOdometry);
 	ROS_INFO("enginecontrol up and running.");
 	ros::spin();
 	close(tty);

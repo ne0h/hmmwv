@@ -1,5 +1,4 @@
 #include "joystick.hpp"
-// #include "Rotate.h"
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
@@ -22,8 +21,6 @@ void updateRemote(const TimerEvent&) {
 	// and axis.1 for up/down
 	JoystickEvent event = joystick.getEvent();
 	vector<short> axis = event.getAxis();
-
-	// check for button.0 to stop
 	vector<bool> buttons = event.getButtons();
 
 	// calculate position values
@@ -34,6 +31,13 @@ void updateRemote(const TimerEvent&) {
 	angular = min(max(angular, -1.0), 1.0);
 	linear = min(max(linear, -1.0), 1.0);
 	stick2y = min(max(stick2y, -1.0), 1.0);
+
+	// Normalize driving vector
+	// This would require a little more computation in enginecontrol, left out
+	// for now.
+	/*const double scale = sqrt(pow(angular, 2) + pow(linear, 2));
+	angular *= scale;
+	linear *= scale;*/
 
 	// SPEEED-BUTTON!
 	if (!buttons.at(0)) {

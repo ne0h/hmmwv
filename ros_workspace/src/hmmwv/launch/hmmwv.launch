@@ -4,36 +4,44 @@
 <rosparam>
 use_sim_time: false
 </rosparam>
-	<node name="move_base" pkg="hmmwv" type="enginecontrol" output="screen">
+
+	<node name="enginecontrol" pkg="hmmwv" type="enginecontrol" output="screen" />
+
+<!--
+	<node pkg="tf" type="static_transform_publisher" name="odom_to_base_link" args="0 0 0 0.0 0.0 0.0 /odom /base_link 100" />
+-->
+
+	<!-- base_link -> base_laser -> laser -->
+	<!--<node pkg="tf" type="static_transform_publisher" name="base_link_to_base_laser" args="0.1 0.1 0.15 0.0 0.0 0.0 /base_link /base_laser 50" />
+	<node pkg="tf" type="static_transform_publisher" name="base_laser_to_laser" args="0 0 0 0.0 0.0 0.0 /base_laser /laser 50" />-->
+	<!-- base_link -> laser -->
+	<node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" args="0.1 0.1 0.15 0.0 0.0 0.0 /base_link /laser 50" />
+
+
+<!-- 	<node name="gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/lms100/scan" output="screen">
+		<param name="linearUpdate" value="0.5" />
+		<param name="angularUpdate" value="0.5" />
+		<param name="temporalUpdate" value="-1.0" />
+		<param name="delta" value="0.15" />
+	</node> -->
+
+	<node name="hector_mapping" pkg="hector_mapping" type="hector_mapping" args="scan:=/lms100/scan">
+		<param name="map_frame" value="map" />
+	</node>
+	<node name="move_base" pkg="move_base" type="move_base">
 		<rosparam file="$(find hmmwv)/conf/costmap_common_params.yaml" command="load" ns="global_costmap" />
 		<rosparam file="$(find hmmwv)/conf/costmap_common_params.yaml" command="load" ns="local_costmap" />
 		<rosparam file="$(find hmmwv)/conf/local_costmap_params.yaml" command="load" />
 		<rosparam file="$(find hmmwv)/conf/global_costmap_params.yaml" command="load" />
 		<rosparam file="$(find hmmwv)/conf/base_local_planner_params.yaml" command="load" />
 	</node>
-	<node pkg="tf" type="static_transform_publisher" name="odom_to_base_link" args="0 0 0 0.0 0.0 0.0 /odom /base_link 100" />
-	<node pkg="tf" type="static_transform_publisher" name="base_link_to_base_laser" args="0.1 0.1 0.15 0.0 0.0 0.0 /base_link /base_laser 100" />
-	<node pkg="tf" type="static_transform_publisher" name="base_laser_to_laser" args="0 0 0 0.0 0.0 0.0 /base_laser /laser 100" />
+	<!-- <node name="navigation" pkg="navigation" type="navigation"/> -->
 
-<!--
-	<node name="gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=/lms100/scan" output="screen">
-		<param name="linearUpdate" value="0.5" />
-		<param name="angularUpdate" value="0.5" />
-		<param name="temporalUpdate" value="-1.0" />
-		<param name="delta" value="0.15" />
-	</node>
--->
-	<node name="hector_mapping" pkg="hector_mapping" type="hector_mapping" args="scan:=/lms100/scan">
-		<param name="map_frame" value="map" />
-	</node>
-<!--
-	<node name="map_server" pkg="map_server" type="map_server" args="$(find hmmwv)/poolraum.pgm 0.025" />
--->
-<!--
-	<include file="$(find amcl)/examples/amcl_diff.launch" />
--->
-	<node pkg="amcl" type="amcl" name="amcl" output="screen" args="scan:=/lms100/scan">
-		<!-- Publish scans from best pose at a max of 10 Hz -->
+	<!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find hmmwv)/poolraum.pgm 0.025" /> -->
+
+
+	<!-- <include file="$(find amcl)/examples/amcl_diff.launch" /> -->
+	<!-- <node pkg="amcl" type="amcl" name="amcl" output="screen" args="scan:=/lms100/scan">
 		<param name="odom_model_type" value="diff"/>
 		<param name="odom_alpha5" value="0.1"/>
 		<param name="transform_tolerance" value="0.2" />
@@ -45,7 +53,6 @@ use_sim_time: false
 		<param name="kld_z" value="0.99"/>
 		<param name="odom_alpha1" value="0.2"/>
 		<param name="odom_alpha2" value="0.2"/>
-		<!-- translation std dev, m -->
 		<param name="odom_alpha3" value="0.8"/>
 		<param name="odom_alpha4" value="0.2"/>
 		<param name="laser_z_hit" value="0.5"/>
@@ -56,7 +63,6 @@ use_sim_time: false
 		<param name="laser_lambda_short" value="0.1"/>
 		<param name="laser_lambda_short" value="0.1"/>
 		<param name="laser_model_type" value="likelihood_field"/>
-		<!-- <param name="laser_model_type" value="beam"/> -->
 		<param name="laser_likelihood_max_dist" value="2.0"/>
 		<param name="update_min_d" value="0.2"/>
 		<param name="update_min_a" value="0.5"/>
@@ -67,10 +73,11 @@ use_sim_time: false
 		<param name="recovery_alpha_fast" value="0.0"/>
 
 		<param name="use_map_topic" value="true"/>
-	</node>
+	</node> -->
+
 	<node name="lms100" pkg="cob_sick_lms1xx" type="lms100">
 		<param name="host" value="192.168.1.2" />
-		<param name="frame_id" value="base_laser" />
+		<param name="frame_id" value="laser" />
 		<param name="angle_resolution" value="0.5" />
 		<param name="scan_frequency" value="25" />
 	</node>
