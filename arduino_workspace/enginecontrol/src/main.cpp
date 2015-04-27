@@ -7,10 +7,10 @@ char buffer[BUFFER_LENGTH];
 uint8_t buffer_pointer;
 bool cmd_available;
 
-volatile uint32_t drive_left_mnt_start;
-volatile uint32_t drive_left_mnt_cur;
-volatile uint32_t drive_right_mnt_start;
-volatile uint32_t drive_right_mnt_cur;
+volatile int32_t drive_left_mnt_start;
+volatile int32_t drive_left_mnt_cur;
+volatile int32_t drive_right_mnt_start;
+volatile int32_t drive_right_mnt_cur;
 
 void uart_prints(char input[], const uint8_t length) {
 	for (uint8_t i = 0; i < length; i++) {
@@ -62,7 +62,13 @@ void cmd() {
 
 	// get rate
 	} else if (strncmp(cmd, CMD_GET_DRIVE_LEFT_RATE, CMD_LENGTH) == 0) {
-		Serial.print(drive_left_mnt_cur);
+
+		int32_t tmp = drive_left_mnt_cur;
+		if (digitalRead(DRIVE_LEFT_DIR) == HIGH) {
+			tmp += -1;
+		}
+
+		Serial.print(tmp);
 		Serial.print('\n');
 
 	/**
@@ -93,7 +99,13 @@ void cmd() {
 
 	// get rate
 	} else if (strncmp(cmd, CMD_GET_DRIVE_RIGHT_RATE, CMD_LENGTH) == 0) {
-		Serial.print(drive_right_mnt_cur);
+
+		int32_t tmp = drive_right_mnt_cur;
+		if (digitalRead(DRIVE_RIGHT_DIR) == LOW) {
+			tmp *= -1;
+		}
+
+		Serial.print(tmp);
 		Serial.print('\n');
 
 	/**
