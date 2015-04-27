@@ -242,23 +242,23 @@ void publishOdometry(const ros::TimerEvent&) {
 	x += dx;
 	y += dy;
 	theta += dtheta;
-	// ROS_INFO("vl: %f vr: %f vx: %f vtheta: %f", vLeft, vRight, vx, vtheta);
+	// ROS_INFO("vl: %f vr: %f vx: %f vtheta: %f", vLeftCur, vRightCur, vx, vtheta);
 
 	// Transform frame
 	//since all odometry is 6DOF we'll need a quaternion created from yaw
 	geometry_msgs::Quaternion odomQuat = tf::createQuaternionMsgFromYaw(theta);
 
-	// geometry_msgs::TransformStamped odomTrans;
-	// odomTrans.header.stamp = currentTime;
-	// odomTrans.header.frame_id = "odom";
-	// odomTrans.child_frame_id = "base_link";
+	geometry_msgs::TransformStamped odomTrans;
+	odomTrans.header.stamp = currentTime;
+	odomTrans.header.frame_id = "odom";
+	odomTrans.child_frame_id = "base_link";
 
-	// odomTrans.transform.translation.x = x;
-	// odomTrans.transform.translation.y = y;
-	// odomTrans.transform.translation.z = 0.0;
-	// odomTrans.transform.rotation = odomQuat;
+	odomTrans.transform.translation.x = x;
+	odomTrans.transform.translation.y = y;
+	odomTrans.transform.translation.z = 0.0;
+	odomTrans.transform.rotation = odomQuat;
 
-	// odomBroadcaster->sendTransform(odomTrans);
+	odomBroadcaster->sendTransform(odomTrans);
 
 
 	// Odometry message
@@ -284,16 +284,16 @@ void publishOdometry(const ros::TimerEvent&) {
 	// This circumvents problems that might be introduced because static_transform_publisher
 	// seems to offset its transforms into the future.
 	// <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" args="0.1 0.1 0.15 0.0 0.0 0.0 /base_link /laser 50" />
-	// geometry_msgs::Quaternion odomQuat = tf::createQuaternionMsgFromYaw(0.0);
-	// geometry_msgs::TransformStamped odomTrans;
-	// odomTrans.header.stamp = ros::Time::now();
-	// odomTrans.header.frame_id = "base_link";
-	// odomTrans.child_frame_id = "laser";
-	// odomTrans.transform.translation.x = 0.1;
-	// odomTrans.transform.translation.y = 0.1;
-	// odomTrans.transform.translation.z = 0.15;
-	// odomTrans.transform.rotation = odomQuat;
-	// odomBroadcaster->sendTransform(odomTrans);
+	geometry_msgs::Quaternion laserQuat = tf::createQuaternionMsgFromYaw(0.0);
+	geometry_msgs::TransformStamped laserTrans;
+	laserTrans.header.stamp = ros::Time::now();
+	laserTrans.header.frame_id = "base_link";
+	laserTrans.child_frame_id = "laser";
+	laserTrans.transform.translation.x = 0.1;
+	laserTrans.transform.translation.y = 0.1;
+	laserTrans.transform.translation.z = 0.15;
+	laserTrans.transform.rotation = laserQuat;
+	odomBroadcaster->sendTransform(laserTrans);
 }
 
 int main(int argc, char **argv) {
