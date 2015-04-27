@@ -18,6 +18,14 @@ const uint8_t	DRIVE_RIGHT_DIR =	36;
 const uint8_t	DRIVE_RIGHT_SPD	=	2;
 const uint8_t	DRIVE_RIGHT_MNT	=	5;		// pin 18
 
+const uint8_t	ROTATE_LEFT_EN	=	33;
+const uint8_t	ROTATE_LEFT_DIR	=	32;
+const uint8_t	ROTATE_LEFT_SPD	=	7;
+
+const uint8_t	ROTATE_RIGHT_EN  =	31;
+const uint8_t	ROTATE_RIGHT_DIR =	30;
+const uint8_t	ROTATE_RIGHT_SPD =	6;
+
 // commands
 const char CMD_SET_DRIVE_LEFT_FORWARD[]		= "sdlf";
 const char CMD_SET_DRIVE_LEFT_BACKWARD[]	= "sdlb";
@@ -28,5 +36,13 @@ const char CMD_SET_DRIVE_RIGHT_FORWARD[]	= "sdrf";
 const char CMD_SET_DRIVE_RIGHT_BACKWARD[]	= "sdrb";
 const char CMD_SET_DRIVE_RIGHT_STOP[]		= "sdrs";
 const char CMD_GET_DRIVE_RIGHT_RATE[]		= "gdrr";
+
+const char CMD_SET_ROTATE_LEFT_FORWARD[]	= "srlf";
+const char CMD_SET_ROTATE_LEFT_BACKWARD[]	= "srlb";
+const char CMD_SET_ROTATE_LEFT_STOP[]		= "srls";
+
+const char CMD_SET_ROTATE_RIGHT_FORWARD[]	= "srrf";
+const char CMD_SET_ROTATE_RIGHT_BACKWARD[]	= "srrb";
+const char CMD_SET_ROTATE_RIGHT_STOP[]		= "srrs";
 
 #endif
