@@ -185,7 +185,7 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 		- msg.angular.z * WHEEL_DISTANCE / (2.0);// * MAX_DRV_SPEED);
 	double vRight = msg.linear.x// / MAX_DRV_SPEED
 		+ msg.angular.z * WHEEL_DISTANCE / (2.0);// * MAX_DRV_SPEED);
-	ROS_INFO("tl: %f tr: %f z: %f", vLeft, vRight, msg.angular.z);
+	// ROS_INFO("tl: %f tr: %f z: %f", vLeft, vRight, msg.angular.z);
 	// Determine rotation directions
 	char dLeft  = vLeft  > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char dRight = vRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
