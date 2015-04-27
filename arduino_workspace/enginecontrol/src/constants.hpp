@@ -3,11 +3,15 @@
 
 #include <stdint.h>
 
-// pin settings
+// connection settings
 const uint32_t	BAUDRATE		=	115200;
 const uint8_t	BUFFER_LENGTH	=	16;
 const uint8_t	CMD_LENGTH		=	4;
 
+const int32_t	RATE_THRESHOLD	=	1000000;
+const int32_t	RATE_MAX		=	2147483647;
+
+// pin settings
 const uint8_t	DRIVE_LEFT_EN	=	35;
 const uint8_t	DRIVE_LEFT_DIR	=	34;
 const uint8_t	DRIVE_LEFT_SPD	=	3;

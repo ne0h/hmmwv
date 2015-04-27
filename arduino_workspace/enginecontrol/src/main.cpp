@@ -63,7 +63,7 @@ void cmd() {
 	// get rate
 	} else if (strncmp(cmd, CMD_GET_DRIVE_LEFT_RATE, CMD_LENGTH) == 0) {
 
-		int32_t tmp = drive_left_mnt_cur;
+		int32_t tmp = (drive_left_mnt_cur > RATE_THRESHOLD) ? RATE_MAX : drive_left_mnt_cur;
 		if (digitalRead(DRIVE_LEFT_DIR) == HIGH) {
 			tmp += -1;
 		}
@@ -100,7 +100,7 @@ void cmd() {
 	// get rate
 	} else if (strncmp(cmd, CMD_GET_DRIVE_RIGHT_RATE, CMD_LENGTH) == 0) {
 
-		int32_t tmp = drive_right_mnt_cur;
+		int32_t tmp = (drive_right_mnt_cur > RATE_THRESHOLD) ? RATE_MAX : drive_right_mnt_cur;
 		if (digitalRead(DRIVE_RIGHT_DIR) == LOW) {
 			tmp *= -1;
 		}
