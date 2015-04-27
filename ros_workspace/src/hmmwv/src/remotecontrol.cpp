@@ -1,4 +1,5 @@
 #include "joystick.hpp"
+#include "constants.hpp"
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
@@ -54,14 +55,16 @@ void updateRemote(const TimerEvent&) {
 		stick2y *= 0.5;
 	}
 
-	if (linear < 0) {
-		angular *= (-1.0);
-	}
+	// if (linear < 0) {
+	// 	angular *= (-1.0);
+	// }
 
+	ROS_INFO("l: %f", linear);
+	// Twist is supposed to contain desired speeds in m/s
 	geometry_msgs::Twist twist;
-	twist.angular.z = angular;
-	twist.angular.y = stick2y;
-	twist.linear.x = linear;
+	twist.angular.z = angular * MAX_TURN_SPEED;
+	twist.angular.y = stick2y * MAX_ROT_SPEED;
+	twist.linear.x = linear * MAX_DRV_SPEED;
 
 	pub.publish(twist);
 }

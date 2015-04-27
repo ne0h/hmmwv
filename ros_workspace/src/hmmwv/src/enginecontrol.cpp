@@ -1,3 +1,4 @@
+#include "constants.hpp"
 #include <string>
 #include <math.h>
 #include <ros/ros.h>
@@ -11,6 +12,7 @@
 #include <math.h>
 #include <iostream>
 #include <sstream>
+#include <limits>
 
 using namespace std;
 
@@ -31,12 +33,12 @@ double theta = 0;
 double vx = 0;
 double vy = 0;
 double vtheta = 0;
-// // direction cache (computed in velocityCallback, used for odometry)
-int dLeftOdo = 1;
-int dRightOdo = 1;
+// Make current speeds always available (and query them only once per cycle)
+double vLeftCur  = 0.0;
+double vRightCur = 0.0;
 
 const double WHEEL_DIAMETER		= 0.155;
-const double WHEEL_OFFSET		= 0.9;//0.215;
+const double WHEEL_OFFSET		= 0.42;//0.9;
 const double WHEEL_REDUCTION	= 86.0;
 
 // Used to form the Arduino commands
@@ -174,25 +176,34 @@ float getSpeed(const char motor)
 }
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
-	// Tank-like steering (rotate around vehicle center)
+	// Store current motor speeds for later reference
+	vLeftCur  = getSpeed(MOTOR_LEFT);
+	vRightCur = getSpeed(MOTOR_RIGHT);
+	
 	// Set linear back/forward speed
 	double vLeft = msg.linear.x;
 	double vRight = msg.linear.x;
-	// Add left/right speeds so that turning on the spot is possible
-	vLeft -= msg.angular.z;
-	vRight += msg.angular.z;
 	// Determine rotation directions
-	// (Yes, having two kinds of "direction" variables sucks badly. Another take
-	// at object orientation should be done to fix this.)
 	char dLeft = vLeft > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char dRight = vRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
-	dLeftOdo = vLeft > 0 ? 1 : -1;
-	dRightOdo = vRight > 0 ? 1 : -1;
-	// Map [-1, 1] -> [0, 1] as we've extracted the directional component
-	vLeft = vLeft < 0 ? vLeft * -1.0 : vLeft;
+
+	// Compute the motor speeds necessary to achieve the desired robot rotation
+	// Get the corner radius (see beginning of http://rossum.sourceforge.net/papers/DiffSteer/DiffSteer.html)
+	double dt = (currentTime - lastTime).toSec(); // Borrow dt from odometry
+	double r = msg.angular.z != 0 ? vLeftCur / msg.angular.z : std::numeric_limits<double>::max();
+	double vTangLeft = msg.angular.z * r * dt;
+	double vTangRight = msg.angular.z * r * WHEEL_OFFSET * dt;
+	// TODO Does this really work? How considerate is move_base in its commands?
+	ROS_INFO("tl: %f tr: %f", vTangLeft, vTangRight);
+	vLeft += vTangLeft;
+	vRight += vTangRight;
+
+	// Map [-MAX_DRV_SPEED, MAX_DRV_SPEED] -> [0, 1] as we've extracted the directional component
+	vLeft  = vLeft  < 0 ? vLeft  * -1.0 : vLeft;
 	vRight = vRight < 0 ? vRight * -1.0 : vRight;
-	vLeft = min(1.0, max(0.0, vLeft));
-	vRight = min(1.0, max(0.0, vRight));
+	vLeft  = min(1.0, vLeft  / MAX_DRV_SPEED);
+	vRight = min(1.0, vRight / MAX_DRV_SPEED);
+	ROS_INFO("l: %f r: %f", vLeft, vRight);
 	// Stop the motors when stopping
 	if(vLeft < STOP_THRESHOLD) {
 		dLeft = MOTOR_STOP;
@@ -211,8 +222,8 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	char dRotRight = vRotRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	vRotLeft = vRotLeft < 0 ? vRotLeft * -1.0 : vRotLeft;
 	vRotRight = vRotRight < 0 ? vRotRight * -1.0 : vRotRight;
-	vRotLeft = min(1.0, max(0.0, vRotLeft));
-	vRotRight = min(1.0, max(0.0, vRotRight));
+	vRotLeft = min(1.0, max(0.0, vRotLeft / MAX_ROT_SPEED));
+	vRotRight = min(1.0, max(0.0, vRotRight / MAX_ROT_SPEED));
 	if(vRotLeft < STOP_THRESHOLD) {
 		dRotLeft = MOTOR_STOP;
 	}
@@ -226,9 +237,7 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 void publishOdometry(const ros::TimerEvent&) {
 // 	// Source: http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom
 // 	// Store odometry input values
-	double vLeft = getSpeed(MOTOR_LEFT) * dLeftOdo;
-	double vRight = getSpeed(MOTOR_RIGHT) * dRightOdo;
-	vx = (vLeft + vRight) / 2.0;
+	vx = (vLeftCur + vRightCur) / 2.0;
 	// vtheta = (vRight - vLeft) / WHEEL_OFFSET;
 
 	// Compute input values
@@ -281,6 +290,8 @@ void publishOdometry(const ros::TimerEvent&) {
 	odomPub.publish(odom);
 
 	// Test TF
+	// This circumvents problems that might be introduced because static_transform_publisher
+	// seems to offset its transforms into the future.
 	// <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" args="0.1 0.1 0.15 0.0 0.0 0.0 /base_link /laser 50" />
 	// geometry_msgs::Quaternion odomQuat = tf::createQuaternionMsgFromYaw(0.0);
 	// geometry_msgs::TransformStamped odomTrans;
