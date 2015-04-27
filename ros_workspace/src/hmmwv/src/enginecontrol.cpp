@@ -32,8 +32,8 @@ double vx = 0;
 double vy = 0;
 double vtheta = 0;
 // // direction cache (computed in velocityCallback, used for odometry)
-int leftDirOdo = 1;
-int rightDirOdo = 1;
+int dLeftOdo = 1;
+int dRightOdo = 1;
 
 const double WHEEL_DIAMETER		= 0.155;
 const double WHEEL_OFFSET		= 0.9;//0.215;
@@ -176,60 +176,60 @@ float getSpeed(const char motor)
 void velocityCallback(const geometry_msgs::Twist& msg) {
 	// Tank-like steering (rotate around vehicle center)
 	// Set linear back/forward speed
-	double leftSpd = msg.linear.x;
-	double rightSpd = msg.linear.x;
+	double vLeft = msg.linear.x;
+	double vRight = msg.linear.x;
 	// Add left/right speeds so that turning on the spot is possible
-	leftSpd -= msg.angular.z;
-	rightSpd += msg.angular.z;
+	vLeft -= msg.angular.z;
+	vRight += msg.angular.z;
 	// Determine rotation directions
 	// (Yes, having two kinds of "direction" variables sucks badly. Another take
 	// at object orientation should be done to fix this.)
-	char leftDir = leftSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
-	char rightDir = rightSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
-	leftDirOdo = leftSpd > 0 ? 1 : -1;
-	rightDirOdo = rightSpd > 0 ? 1 : -1;
+	char dLeft = vLeft > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
+	char dRight = vRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
+	dLeftOdo = vLeft > 0 ? 1 : -1;
+	dRightOdo = vRight > 0 ? 1 : -1;
 	// Map [-1, 1] -> [0, 1] as we've extracted the directional component
-	leftSpd = leftSpd < 0 ? leftSpd * -1.0 : leftSpd;
-	rightSpd = rightSpd < 0 ? rightSpd * -1.0 : rightSpd;
-	leftSpd = min(1.0, max(0.0, leftSpd));
-	rightSpd = min(1.0, max(0.0, rightSpd));
+	vLeft = vLeft < 0 ? vLeft * -1.0 : vLeft;
+	vRight = vRight < 0 ? vRight * -1.0 : vRight;
+	vLeft = min(1.0, max(0.0, vLeft));
+	vRight = min(1.0, max(0.0, vRight));
 	// Stop the motors when stopping
-	if(leftSpd < STOP_THRESHOLD) {
-		leftDir = MOTOR_STOP;
+	if(vLeft < STOP_THRESHOLD) {
+		dLeft = MOTOR_STOP;
 	}
-	if(rightSpd < STOP_THRESHOLD) {
-		rightDir = MOTOR_STOP;
+	if(vRight < STOP_THRESHOLD) {
+		dRight = MOTOR_STOP;
 	}
 	// Apply!
-	setDrive(MOTOR_LEFT, leftDir, leftSpd);
-	setDrive(MOTOR_RIGHT, rightDir, rightSpd);
+	setDrive(MOTOR_LEFT, dLeft, vLeft);
+	setDrive(MOTOR_RIGHT, dRight, vRight);
 
 	// Wheel disc rotation
-	double leftRotSpd = msg.angular.y;
-	double rightRotSpd = msg.angular.y;
-	char leftRotDir = leftRotSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
-	char rightRotDir = rightRotSpd > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
-	leftRotSpd = leftRotSpd < 0 ? leftRotSpd * -1.0 : leftRotSpd;
-	rightRotSpd = rightRotSpd < 0 ? rightRotSpd * -1.0 : rightRotSpd;
-	leftRotSpd = min(1.0, max(0.0, leftRotSpd));
-	rightRotSpd = min(1.0, max(0.0, rightRotSpd));
-	if(leftRotSpd < STOP_THRESHOLD) {
-		leftRotDir = MOTOR_STOP;
+	double vRotLeft = msg.angular.y;
+	double vRotRight = msg.angular.y;
+	char dRotLeft = vRotLeft > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
+	char dRotRight = vRotRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
+	vRotLeft = vRotLeft < 0 ? vRotLeft * -1.0 : vRotLeft;
+	vRotRight = vRotRight < 0 ? vRotRight * -1.0 : vRotRight;
+	vRotLeft = min(1.0, max(0.0, vRotLeft));
+	vRotRight = min(1.0, max(0.0, vRotRight));
+	if(vRotLeft < STOP_THRESHOLD) {
+		dRotLeft = MOTOR_STOP;
 	}
-	if(rightRotSpd < STOP_THRESHOLD) {
-		rightRotDir = MOTOR_STOP;
+	if(vRotRight < STOP_THRESHOLD) {
+		dRotRight = MOTOR_STOP;
 	}
-	setRotation(MOTOR_LEFT, leftRotDir, leftRotSpd);
-	setRotation(MOTOR_RIGHT, rightRotDir, rightRotSpd);
+	setRotation(MOTOR_LEFT, dRotLeft, vRotLeft);
+	setRotation(MOTOR_RIGHT, dRotRight, vRotRight);
 }
 
 void publishOdometry(const ros::TimerEvent&) {
 // 	// Source: http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom
 // 	// Store odometry input values
-	double leftSpd = getSpeed(MOTOR_LEFT) * leftDirOdo;
-	double rightSpd = getSpeed(MOTOR_RIGHT) * rightDirOdo;
-	vx = (leftSpd + rightSpd) / 2.0;
-	// vtheta = (rightSpd - leftSpd) / WHEEL_OFFSET;
+	double vLeft = getSpeed(MOTOR_LEFT) * dLeftOdo;
+	double vRight = getSpeed(MOTOR_RIGHT) * dRightOdo;
+	vx = (vLeft + vRight) / 2.0;
+	// vtheta = (vRight - vLeft) / WHEEL_OFFSET;
 
 	// Compute input values
 	double dt = (currentTime - lastTime).toSec();
@@ -242,23 +242,23 @@ void publishOdometry(const ros::TimerEvent&) {
 	x += dx;
 	y += dy;
 	theta += dtheta;
-	// ROS_INFO("vl: %f vr: %f vx: %f vtheta: %f", leftSpd, rightSpd, vx, vtheta);
+	// ROS_INFO("vl: %f vr: %f vx: %f vtheta: %f", vLeft, vRight, vx, vtheta);
 
 	// Transform frame
 	//since all odometry is 6DOF we'll need a quaternion created from yaw
 	geometry_msgs::Quaternion odomQuat = tf::createQuaternionMsgFromYaw(theta);
 
-	geometry_msgs::TransformStamped odomTrans;
-	odomTrans.header.stamp = currentTime;
-	odomTrans.header.frame_id = "odom";
-	odomTrans.child_frame_id = "base_link";
+	// geometry_msgs::TransformStamped odomTrans;
+	// odomTrans.header.stamp = currentTime;
+	// odomTrans.header.frame_id = "odom";
+	// odomTrans.child_frame_id = "base_link";
 
-	odomTrans.transform.translation.x = x;
-	odomTrans.transform.translation.y = y;
-	odomTrans.transform.translation.z = 0.0;
-	odomTrans.transform.rotation = odomQuat;
+	// odomTrans.transform.translation.x = x;
+	// odomTrans.transform.translation.y = y;
+	// odomTrans.transform.translation.z = 0.0;
+	// odomTrans.transform.rotation = odomQuat;
 
-	odomBroadcaster->sendTransform(odomTrans);
+	// odomBroadcaster->sendTransform(odomTrans);
 
 
 	// Odometry message
