@@ -37,10 +37,6 @@ double vtheta = 0;
 double vLeftCur  = 0.0;
 double vRightCur = 0.0;
 
-const double WHEEL_DIAMETER		= 0.155;
-const double WHEEL_OFFSET		= 0.42;//0.9;
-const double WHEEL_REDUCTION	= 86.0;
-
 // Used to form the Arduino commands
 const char MOTOR_LEFT = 'l';
 const char MOTOR_RIGHT = 'r';
@@ -159,7 +155,7 @@ float getSpeed(const char motor)
 	// ROS_INFO("%s", ss.str().c_str());
 	
 	// Read response
-	// Expected: max. 10 characters (2,147,483,647) + \n
+	// Expected: max. 11 characters (-2,147,483,647) + \n
 	const int LINE_LENGTH = 11;
 	char line[LINE_LENGTH] = {0};
 	const int lineLength = readLine(line, LINE_LENGTH);
@@ -180,30 +176,25 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	vLeftCur  = getSpeed(MOTOR_LEFT);
 	vRightCur = getSpeed(MOTOR_RIGHT);
 	
-	// Set linear back/forward speed
-	double vLeft = msg.linear.x;
-	double vRight = msg.linear.x;
+	// Compute the motor speeds necessary to achieve the desired linear and angular motion
+	// Adapted from:
+	// https://code.google.com/p/differential-drive/source/browse/nodes/twist_to_motors.py
+	// self.right = 1.0 * self.dx + self.dr * self.w / 2 
+	// self.left = 1.0 * self.dx - self.dr * self.w / 2
+	double vLeft  = msg.linear.x// / MAX_DRV_SPEED
+		- msg.angular.z * WHEEL_DISTANCE / (2.0);// * MAX_DRV_SPEED);
+	double vRight = msg.linear.x// / MAX_DRV_SPEED
+		+ msg.angular.z * WHEEL_DISTANCE / (2.0);// * MAX_DRV_SPEED);
+	ROS_INFO("tl: %f tr: %f z: %f", vLeft, vRight, msg.angular.z);
 	// Determine rotation directions
-	char dLeft = vLeft > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
+	char dLeft  = vLeft  > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char dRight = vRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
-
-	// Compute the motor speeds necessary to achieve the desired robot rotation
-	// Get the corner radius (see beginning of http://rossum.sourceforge.net/papers/DiffSteer/DiffSteer.html)
-	double dt = (currentTime - lastTime).toSec(); // Borrow dt from odometry
-	double r = msg.angular.z != 0 ? vLeftCur / msg.angular.z : std::numeric_limits<double>::max();
-	double vTangLeft = msg.angular.z * r * dt;
-	double vTangRight = msg.angular.z * r * WHEEL_OFFSET * dt;
-	// TODO Does this really work? How considerate is move_base in its commands?
-	ROS_INFO("tl: %f tr: %f", vTangLeft, vTangRight);
-	vLeft += vTangLeft;
-	vRight += vTangRight;
 
 	// Map [-MAX_DRV_SPEED, MAX_DRV_SPEED] -> [0, 1] as we've extracted the directional component
 	vLeft  = vLeft  < 0 ? vLeft  * -1.0 : vLeft;
 	vRight = vRight < 0 ? vRight * -1.0 : vRight;
 	vLeft  = min(1.0, vLeft  / MAX_DRV_SPEED);
 	vRight = min(1.0, vRight / MAX_DRV_SPEED);
-	ROS_INFO("l: %f r: %f", vLeft, vRight);
 	// Stop the motors when stopping
 	if(vLeft < STOP_THRESHOLD) {
 		dLeft = MOTOR_STOP;
@@ -246,7 +237,7 @@ void publishOdometry(const ros::TimerEvent&) {
 	currentTime = ros::Time::now();
 	double dx = (vx * cos(theta) - vy * sin(theta)) * dt;
 	double dy = (vx * sin(theta) - vy * cos(theta)) * dt;
-	vtheta = (dx - dy) / WHEEL_OFFSET;
+	vtheta = (dx - dy) / WHEEL_DISTANCE;
 	double dtheta = vtheta * dt;
 	x += dx;
 	y += dy;

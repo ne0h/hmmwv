@@ -42,7 +42,6 @@ void updateRemote(const TimerEvent&) {
 
 	// SPEEED-BUTTON!
 	if (!buttons.at(0)) {
-		angular *= 0.25;
 		linear *= 0.25;
 	} else {
 		// Safety measures...
@@ -59,7 +58,6 @@ void updateRemote(const TimerEvent&) {
 	// 	angular *= (-1.0);
 	// }
 
-	ROS_INFO("l: %f", linear);
 	// Twist is supposed to contain desired speeds in m/s
 	geometry_msgs::Twist twist;
 	twist.angular.z = angular * MAX_TURN_SPEED;
