@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 	pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
 	// startup main loop
-	Timer remoteTimer = n.createTimer(Duration(0.0166 /*60 Hz*/), updateRemote);
+	Timer remoteTimer = n.createTimer(Duration(1.0/30.0 /*Hz*/), updateRemote);
 	spin();
 	return 0;
 }
