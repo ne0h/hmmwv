@@ -216,10 +216,14 @@ void setup() {
 	buffer_pointer = 0;
 	cmd_available  = false;
 
-	pinMode(DRIVE_LEFT_EN,   OUTPUT);
-	pinMode(DRIVE_LEFT_DIR,  OUTPUT);
-	pinMode(DRIVE_RIGHT_EN,  OUTPUT);
-	pinMode(DRIVE_RIGHT_DIR, OUTPUT);
+	pinMode(DRIVE_LEFT_EN,    OUTPUT);
+	pinMode(DRIVE_LEFT_DIR,   OUTPUT);
+	pinMode(DRIVE_RIGHT_EN,   OUTPUT);
+	pinMode(DRIVE_RIGHT_DIR,  OUTPUT);
+	pinMode(ROTATE_LEFT_EN,	  OUTPUT);
+	pinMode(ROTATE_LEFT_DIR,  OUTPUT);
+	pinMode(ROTATE_RIGHT_EN,  OUTPUT);
+	pinMode(ROTATE_RIGHT_DIR, OUTPUT);
 
 	// init all output pins with 0
 
