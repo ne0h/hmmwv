@@ -132,13 +132,13 @@ void setRotation(const char motor, const char direction, const float spd = 0.0f)
 	}
 	ss << std::endl;
 	const char* output = ss.str().c_str();
-	// write(tty, output, ss.str().length());
+	write(tty, output, ss.str().length());
 	// check response
-	// char line[2];
-	// const int lineLength = readLine(line, 2);
-	// if(atoi(line) != 0) {
-	// 	ROS_INFO("Command failed: %s", output);
-	// }
+	char line[2];
+	const int lineLength = readLine(line, 2);
+	if(atoi(line) != 0) {
+		ROS_INFO("Command failed: %s", output);
+	}
 }
 
 /*
