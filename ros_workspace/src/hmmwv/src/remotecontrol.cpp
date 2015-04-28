@@ -36,9 +36,9 @@ void updateRemote(const TimerEvent&) {
 	// Normalize driving vector
 	// This would require a little more computation in enginecontrol, left out
 	// for now.
-	/*const double scale = sqrt(pow(angular, 2) + pow(linear, 2));
-	angular *= scale;
-	linear *= scale;*/
+	// const double scale = sqrt(pow(angular, 2) + pow(linear, 2));
+	// angular *= scale;
+	// linear *= scale;
 
 	// SPEEED-BUTTON!
 	if (!buttons.at(0)) {
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	// init ros
 	init(argc, argv, "remotecontrol");
 	NodeHandle n;
-	pub = n.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1);
+	pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
 	// startup main loop
 	Timer remoteTimer = n.createTimer(Duration(0.0166 /*60 Hz*/), updateRemote);

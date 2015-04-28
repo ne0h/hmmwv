@@ -312,7 +312,7 @@ int main(int argc, char **argv) {
 	setRotation(MOTOR_RIGHT, MOTOR_STOP);
 
 	// This is correct - we're borrowing the turtle's topics
-	ros::Subscriber sub = n.subscribe("turtle1/cmd_vel", 1, velocityCallback);
+	ros::Subscriber sub = n.subscribe("cmd_vel", 1, velocityCallback);
 	odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
 	odomBroadcaster = boost::make_shared<tf::TransformBroadcaster>();
 	ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/10.0/*10 Hz*/), publishOdometry);
