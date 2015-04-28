@@ -10,6 +10,7 @@
 using namespace ros;
 using namespace std;
 
+const int AXIS_MAX = 32767;
 Joystick joystick;
 Publisher pub;
 
