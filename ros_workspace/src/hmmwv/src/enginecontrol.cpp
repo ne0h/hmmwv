@@ -326,7 +326,7 @@ int main(int argc, char **argv) {
 	ros::Subscriber sub = n.subscribe("cmd_vel", 1, velocityCallback);
 	odomPub = n.advertise<nav_msgs::Odometry>("odom", 50);
 	odomBroadcaster = boost::make_shared<tf::TransformBroadcaster>();
-	ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/10.0/*10 Hz*/), publishOdometry);
+	//ros::Timer odoTimer = n.createTimer(ros::Duration(1.0/10.0/*10 Hz*/), publishOdometry);
 	ROS_INFO("enginecontrol up and running.");
 	ros::spin();
 	close(tty);
