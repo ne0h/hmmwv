@@ -1,16 +1,9 @@
 #include <Arduino.h>
-
 #include "constants.hpp"
-#include "monitor.hpp"
 
 char buffer[BUFFER_LENGTH];
 uint8_t buffer_pointer;
 bool cmd_available;
-
-volatile int32_t drive_left_mnt_start;
-volatile int32_t drive_left_mnt_cur;
-volatile int32_t drive_right_mnt_start;
-volatile int32_t drive_right_mnt_cur;
 
 void uart_prints(char input[], const uint8_t length) {
 	for (uint8_t i = 0; i < length; i++) {
@@ -60,17 +53,6 @@ void cmd() {
 
 		uart_print_success();
 
-	// get rate
-	} else if (strncmp(cmd, CMD_GET_DRIVE_LEFT_RATE, CMD_LENGTH) == 0) {
-
-		int32_t tmp = (drive_left_mnt_cur > RATE_THRESHOLD) ? RATE_MAX : drive_left_mnt_cur;
-		if (digitalRead(DRIVE_LEFT_DIR) == HIGH) {
-			tmp += -1;
-		}
-
-		Serial.print(tmp);
-		Serial.print('\n');
-
 	/**
 	 * drive engine right side
 	 */
@@ -96,17 +78,6 @@ void cmd() {
 		digitalWrite(DRIVE_RIGHT_EN, LOW);
 
 		uart_print_success();
-
-	// get rate
-	} else if (strncmp(cmd, CMD_GET_DRIVE_RIGHT_RATE, CMD_LENGTH) == 0) {
-
-		int32_t tmp = (drive_right_mnt_cur > RATE_THRESHOLD) ? RATE_MAX : drive_right_mnt_cur;
-		if (digitalRead(DRIVE_RIGHT_DIR) == LOW) {
-			tmp *= -1;
-		}
-
-		Serial.print(tmp);
-		Serial.print('\n');
 
 	/**
 	 * rotate engine left side
@@ -171,24 +142,6 @@ void cmd() {
 
 }
 
-/*
- * Interrupt Service Routine for the left drive motor monitor.
- */
-void isr_drive_left_mnt() {
-	uint32_t cur = micros();
-	drive_left_mnt_cur   = cur - drive_left_mnt_start;
-	drive_left_mnt_start = cur;
-}
-
-/*
- * Interrupt Service Routine for the right drive motor monitor.
- */
-void isr_drive_right_mnt() {
-	uint32_t cur = micros();
-	drive_right_mnt_cur   = cur - drive_right_mnt_start;
-	drive_right_mnt_start = cur;
-}
-
 void serialEvent() {
 	while (Serial.available()) {
 		const char c = Serial.read();
@@ -210,7 +163,6 @@ void serialEvent() {
 }
 
 void setup() {
-	monitor_init(115200);
 
 	Serial.begin(BAUDRATE);
 	buffer_pointer = 0;
@@ -234,17 +186,6 @@ void setup() {
 	digitalWrite(DRIVE_RIGHT_EN, LOW);
 	digitalWrite(DRIVE_RIGHT_DIR, LOW);
 	analogWrite(DRIVE_RIGHT_SPD, 0);
-
-	monitor_write("Pin modes set", 13);
-
-	// setup motor encoder listeners
-	drive_left_mnt_start  = micros();
-	drive_right_mnt_start = micros();
-	drive_left_mnt_cur    = 0;
-	drive_right_mnt_cur   = 0;
-
-	attachInterrupt(DRIVE_LEFT_MNT,  isr_drive_left_mnt,  RISING);
-	attachInterrupt(DRIVE_RIGHT_MNT, isr_drive_right_mnt, RISING);
 }
 
 void loop() {
