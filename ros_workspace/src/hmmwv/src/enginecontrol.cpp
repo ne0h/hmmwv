@@ -36,6 +36,9 @@ double vtheta = 0;
 // Make current speeds always available (and query them only once per cycle)
 double vLeftCur  = 0.0;
 double vRightCur = 0.0;
+// Cache speeds to only send data if they change
+double vLeftLast  = 0.0;
+double vRightLast = 0.0;
 
 // Used to form the Arduino commands
 const char MOTOR_LEFT = 'l';
@@ -173,9 +176,9 @@ float getSpeed(const char motor)
 
 void velocityCallback(const geometry_msgs::Twist& msg) {
 	// Store current motor speeds for later reference
-	vLeftCur  = getSpeed(MOTOR_LEFT);
-	vRightCur = getSpeed(MOTOR_RIGHT);
-	
+	vLeftCur   = getSpeed(MOTOR_LEFT);
+	vRightCur  = getSpeed(MOTOR_RIGHT);
+
 	// Compute the motor speeds necessary to achieve the desired linear and angular motion
 	// Adapted from:
 	// https://code.google.com/p/differential-drive/source/browse/nodes/twist_to_motors.py
@@ -185,6 +188,14 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 		- msg.angular.z * WHEEL_DISTANCE / (2.0);// * MAX_DRV_SPEED);
 	double vRight = msg.linear.x// / MAX_DRV_SPEED
 		+ msg.angular.z * WHEEL_DISTANCE / (2.0);// * MAX_DRV_SPEED);
+
+	// Only send new commands to the Arduino if the input actually changed
+	if(vLeft == vLeftLast && vRight == vRightLast) {
+		return;
+	}
+	vLeftLast  = vLeft;
+	vRightLast = vRight;
+
 	// ROS_INFO("tl: %f tr: %f z: %f", vLeft, vRight, msg.angular.z);
 	// Determine rotation directions
 	char dLeft  = vLeft  > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
@@ -213,8 +224,8 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	char dRotRight = vRotRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	vRotLeft = vRotLeft < 0 ? vRotLeft * -1.0 : vRotLeft;
 	vRotRight = vRotRight < 0 ? vRotRight * -1.0 : vRotRight;
-	vRotLeft = min(1.0, max(0.0, vRotLeft / MAX_ROT_SPEED));
-	vRotRight = min(1.0, max(0.0, vRotRight / MAX_ROT_SPEED));
+	vRotLeft = min(1.0, vRotLeft / MAX_ROT_SPEED);
+	vRotRight = min(1.0, vRotRight / MAX_ROT_SPEED);
 	if(vRotLeft < STOP_THRESHOLD) {
 		dRotLeft = MOTOR_STOP;
 	}
