@@ -7,14 +7,16 @@
 #include <string>
 #include <math.h>
 
-const int DEAD_ZONE = 16384;
-const int AXIS_MAX = 32767;
-
 using namespace ros;
 using namespace std;
 
 Joystick joystick;
 Publisher pub;
+
+// Used to send a "stop" message after the safety button was released. Otherwise
+// the robot could continue driving with the current speed in case the button
+// was released while in motion.
+bool safetyButtonWasPressed = false;
 
 void updateRemote(const TimerEvent&) {
 	// get axis values
@@ -24,13 +26,6 @@ void updateRemote(const TimerEvent&) {
 	vector<short> axis = event.getAxis();
 	vector<bool> buttons = event.getButtons();
 
-	// Don't send commands if we're not supposed to do so.
-	// This is necessary as the remote *must not* permanently send "stop"
-	// commands while not in use. This will make the robot winch crazily.
-	if(!buttons.at(4)) {
-		return;
-	}
-
 	// calculate position values
 	double angular = (-1.0) * axis.at(0) / AXIS_MAX;
 	double linear  = (-1.0) * axis.at(1) / AXIS_MAX;
@@ -39,6 +34,20 @@ void updateRemote(const TimerEvent&) {
 	angular = min(max(angular, -1.0), 1.0);
 	linear = min(max(linear, -1.0), 1.0);
 	stick2y = min(max(stick2y, -1.0), 1.0);
+
+	// Don't send commands if we're not supposed to do so.
+	// This is necessary as the remote *must not* permanently send "stop"
+	// commands while not in use. This will make the robot winch crazily.
+	if(!buttons.at(4)) {
+		if(!safetyButtonWasPressed) {
+			return;
+		} else {
+			angular = 0.0;
+			linear  = 0.0;
+			stick2y = 0.0;
+		}
+	}
+	safetyButtonWasPressed = true;
 
 	// Normalize driving vector
 	// This would require a little more computation in enginecontrol, left out
@@ -90,7 +99,7 @@ int main(int argc, char **argv) {
 	pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
 	// startup main loop
-	Timer remoteTimer = n.createTimer(Duration(1.0/30.0 /*Hz*/), updateRemote);
+	Timer remoteTimer = n.createTimer(Duration(0.0166 /*60 Hz*/), updateRemote);
 	spin();
 	return 0;
 }
