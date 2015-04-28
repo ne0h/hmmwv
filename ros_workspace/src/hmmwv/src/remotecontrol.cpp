@@ -24,6 +24,13 @@ void updateRemote(const TimerEvent&) {
 	vector<short> axis = event.getAxis();
 	vector<bool> buttons = event.getButtons();
 
+	// Don't send commands if we're not supposed to do so.
+	// This is necessary as the remote *must not* permanently send "stop"
+	// commands while not in use. This will make the robot winch crazily.
+	if(!buttons.at(4)) {
+		return;
+	}
+
 	// calculate position values
 	double angular = (-1.0) * axis.at(0) / AXIS_MAX;
 	double linear  = (-1.0) * axis.at(1) / AXIS_MAX;
