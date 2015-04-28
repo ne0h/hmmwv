@@ -4,7 +4,7 @@ TrajectoryPlannerROS:
   max_rotational_vel: 1.732
   min_in_place_rotational_vel: 3.0
 
-  acc_lim_th: 1.0
+  acc_lim_theta: 3.2
   acc_lim_x: 1.0
 
   # Differential-drive robot configuration
