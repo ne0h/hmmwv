@@ -62,7 +62,6 @@ void updateRemote(const TimerEvent&) {
 		linear *= 0.25;
 	} else {
 		// Safety measures...
-		angular *= 0.75;
 		linear *= 0.75;
 	}
 	if (!buttons.at(1)) {
@@ -77,9 +76,9 @@ void updateRemote(const TimerEvent&) {
 
 	// Twist is supposed to contain desired speeds in m/s
 	geometry_msgs::Twist twist;
-	twist.angular.z = angular * MAX_TURN_SPEED;
-	twist.angular.y = stick2y * MAX_ROT_SPEED;
 	twist.linear.x = linear * MAX_DRV_SPEED;
+	twist.angular.y = stick2y * MAX_ROT_SPEED;
+	twist.angular.z = angular * MAX_TURN_SPEED;
 
 	pub.publish(twist);
 }

@@ -209,8 +209,8 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	// Map [-MAX_DRV_SPEED, MAX_DRV_SPEED] -> [0, 1] as we've extracted the directional component
 	vLeft  = vLeft  < 0 ? vLeft  * -1.0 : vLeft;
 	vRight = vRight < 0 ? vRight * -1.0 : vRight;
-	vLeft  = min(1.0, vLeft  / MAX_DRV_SPEED);
-	vRight = min(1.0, vRight / MAX_DRV_SPEED);
+	vLeft  = min(1.0, max(0.0, vLeft  / MAX_DRV_SPEED));
+	vRight = min(1.0, max(0.0, vRight / MAX_DRV_SPEED));
 	// Stop the motors when stopping
 	if(vLeft < STOP_THRESHOLD) {
 		dLeft = MOTOR_STOP;
@@ -225,10 +225,10 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	// Wheel disc rotation
 	char dRotLeft = vRotLeft > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char dRotRight = vRotRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
-	vRotLeft = vRotLeft < 0 ? vRotLeft * -1.0 : vRotLeft;
+	vRotLeft  = vRotLeft < 0 ? vRotLeft * -1.0 : vRotLeft;
 	vRotRight = vRotRight < 0 ? vRotRight * -1.0 : vRotRight;
-	vRotLeft = min(1.0, vRotLeft / MAX_ROT_SPEED);
-	vRotRight = min(1.0, vRotRight / MAX_ROT_SPEED);
+	vRotLeft  = min(1.0, max(0.0, vRotLeft  / MAX_ROT_SPEED));
+	vRotRight = min(1.0, max(0.0, vRotRight / MAX_ROT_SPEED));
 	if(vRotLeft < STOP_THRESHOLD) {
 		dRotLeft = MOTOR_STOP;
 	}
