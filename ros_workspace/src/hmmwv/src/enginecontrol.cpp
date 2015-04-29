@@ -223,8 +223,10 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	setDrive(MOTOR_RIGHT, dRight, vRight);
 
 	// Wheel disc rotation
+	// Extract direction
 	char dRotLeft = vRotLeft > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char dRotRight = vRotRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
+	// Map speeds to [0, 1]
 	vRotLeft  = vRotLeft < 0 ? vRotLeft * -1.0 : vRotLeft;
 	vRotRight = vRotRight < 0 ? vRotRight * -1.0 : vRotRight;
 	vRotLeft  = min(1.0, max(0.0, vRotLeft  / MAX_ROT_SPEED));

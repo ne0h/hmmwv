@@ -50,13 +50,6 @@ void updateRemote(const TimerEvent&) {
 	}
 	safetyButtonWasPressed = true;
 
-	// Normalize driving vector
-	// This would require a little more computation in enginecontrol, left out
-	// for now.
-	// const double scale = sqrt(pow(angular, 2) + pow(linear, 2));
-	// angular *= scale;
-	// linear *= scale;
-
 	// SPEEED-BUTTON!
 	if (!buttons.at(0)) {
 		linear *= 0.25;
