@@ -37,8 +37,10 @@ double vtheta = 0;
 double vLeftCur  = 0.0;
 double vRightCur = 0.0;
 // Cache speeds to only send data if they change
-double vLeftLast  = 0.0;
-double vRightLast = 0.0;
+double vLeftLast     = 0.0;
+double vRightLast    = 0.0;
+double vRotLeftLast  = 0.0;
+double vRotRightLast = 0.0;
 
 // Used to form the Arduino commands
 const char MOTOR_LEFT = 'l';
@@ -184,17 +186,20 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	// https://code.google.com/p/differential-drive/source/browse/nodes/twist_to_motors.py
 	// self.right = 1.0 * self.dx + self.dr * self.w / 2 
 	// self.left = 1.0 * self.dx - self.dr * self.w / 2
-	double vLeft  = msg.linear.x// / MAX_DRV_SPEED
-		- msg.angular.z * WHEEL_DISTANCE / (2.0);// * MAX_DRV_SPEED);
-	double vRight = msg.linear.x// / MAX_DRV_SPEED
-		+ msg.angular.z * WHEEL_DISTANCE / (2.0);// * MAX_DRV_SPEED);
+	double vLeft  = msg.linear.x - msg.angular.z * WHEEL_DISTANCE / (2.0);
+	double vRight = msg.linear.x + msg.angular.z * WHEEL_DISTANCE / (2.0);
+	double vRotLeft = msg.angular.y;
+	double vRotRight = msg.angular.y;
 
 	// Only send new commands to the Arduino if the input actually changed
-	if(vLeft == vLeftLast && vRight == vRightLast) {
+	if(vLeft == vLeftLast && vRight == vRightLast
+		&& vRotLeft == vRotLeftLast && vRotRight == vRotRightLast) {
 		return;
 	}
-	vLeftLast  = vLeft;
-	vRightLast = vRight;
+	vLeftLast     = vLeft;
+	vRightLast    = vRight;
+	vRotLeftLast  = vRotLeft;
+	vRotRightLast = vRotLeft;
 
 	// ROS_INFO("tl: %f tr: %f z: %f", vLeft, vRight, msg.angular.z);
 	// Determine rotation directions
@@ -218,8 +223,6 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	setDrive(MOTOR_RIGHT, dRight, vRight);
 
 	// Wheel disc rotation
-	double vRotLeft = msg.angular.y;
-	double vRotRight = msg.angular.y;
 	char dRotLeft = vRotLeft > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	char dRotRight = vRotRight > 0 ? MOTOR_FORWARD : MOTOR_BACKWARD;
 	vRotLeft = vRotLeft < 0 ? vRotLeft * -1.0 : vRotLeft;
