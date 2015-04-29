@@ -39,7 +39,7 @@ void updateRemote(const TimerEvent&) {
 	// Don't send commands if we're not supposed to do so.
 	// This is necessary as the remote *must not* permanently send "stop"
 	// commands while not in use. This will make the robot winch crazily.
-	if(!buttons.at(4)) {
+	if(!buttons.at(4) && !buttons.at(6)) {
 		if(!safetyButtonWasPressed) {
 			return;
 		} else {
