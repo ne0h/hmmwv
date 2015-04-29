@@ -14,3 +14,4 @@ TrajectoryPlannerROS:
   acc_lim_y: 0.0
   vy_samples: 0
 
+  meter_scoring: true
