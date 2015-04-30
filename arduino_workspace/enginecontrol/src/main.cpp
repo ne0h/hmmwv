@@ -186,6 +186,14 @@ void setup() {
 	digitalWrite(DRIVE_RIGHT_EN, LOW);
 	digitalWrite(DRIVE_RIGHT_DIR, LOW);
 	analogWrite(DRIVE_RIGHT_SPD, 0);
+
+	digitalWrite(ROTATE_LEFT_EN,  LOW);
+	digitalWrite(ROTATE_LEFT_DIR, LOW);
+	analogWrite(ROTATE_LEFT_SPD,  0);
+
+	digitalWrite(ROTATE_RIGHT_EN,  LOW);
+	digitalWrite(ROTATE_RIGHT_DIR, LOW);
+	digitalWrite(ROTATE_RIGHT_SPD, 0);
 }
 
 void loop() {
