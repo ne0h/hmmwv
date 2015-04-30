@@ -8,7 +8,7 @@ TrajectoryPlannerROS:
 
   # The maximum forward velocity allowed for the base in meters/sec
   max_vel_x: 0.64
-  min_vel_x: 0.10
+  min_vel_x: 0.1
   
   max_rotational_vel: 1.732
   min_vel_theta: -1.732
@@ -32,3 +32,13 @@ TrajectoryPlannerROS:
   vy_samples: 0
 
   meter_scoring: true
+
+  # The tolerance in radians for the controller in yaw/rotation when achieving
+  # its goal
+  yaw_goal_tolerance: 0.2
+  # The tolerance in merers for the controller in the x and y distance when
+  # achieving its goal
+  xy_goal_tolerance: 0.2
+  # If the robot reaches the goal xy location it will simply rotate in place,
+  # even if it ends up outside the goal tolerance while it is doing so
+  latch_xy_goal_tolerance: true
