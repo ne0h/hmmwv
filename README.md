@@ -96,7 +96,7 @@ To enable automatic map generation:
 
 Notes
 -----
-
+* The package *hector_filetrain* is directly taken from *https://github.com/tu-darmstadt-ros-pkg/hector_slam* to add a transform delay
 * The code for the lms100 driver is taken from *https://github.com/ipa320/cob_driver/tree/indigo_dev/cob_sick_lms1xx*
 * [Beaglebone Interactive Pin Map](http://eskimon.fr/beaglebone-black-gpio-interactive-map)
 * At normal (0.25x) driving speed, the robot covers 2 meters within 6,872 seconds => 1,642 m/s at full speed (1.0x)
