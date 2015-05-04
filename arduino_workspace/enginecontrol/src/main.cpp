@@ -112,7 +112,7 @@ void cmd() {
 	// forward
 	} else if (strncmp(cmd, CMD_SET_ROTATE_RIGHT_FORWARD, CMD_LENGTH) == 0) {
 		digitalWrite(ROTATE_RIGHT_EN, HIGH);
-		digitalWrite(ROTATE_RIGHT_DIR, LOW);
+		digitalWrite(ROTATE_RIGHT_DIR, HIGH);
 		analogWrite(ROTATE_RIGHT_SPD, buffer[4]);
 
 		uart_print_success();
@@ -120,7 +120,7 @@ void cmd() {
 	// backward
 	} else if (strncmp(cmd, CMD_SET_ROTATE_RIGHT_BACKWARD, CMD_LENGTH) == 0) {
 		digitalWrite(ROTATE_RIGHT_EN, HIGH);
-		digitalWrite(ROTATE_RIGHT_DIR, HIGH);
+		digitalWrite(ROTATE_RIGHT_DIR, LOW);
 		analogWrite(ROTATE_RIGHT_SPD, buffer[4]);
 
 		uart_print_success();
