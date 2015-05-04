@@ -57,11 +57,11 @@ void updateRemote(const TimerEvent&) {
 		// Safety measures...
 		linear *= 0.75;
 	}
-	if (!buttons.at(1)) {
-		stick2y *= 0.2; // Scale wheel rotation nice and slow
+	/*if (!buttons.at(1)) {
+		stick2y *= 0.; // Scale wheel rotation nice and slow
 	} else {
-		stick2y *= 0.5;
-	}
+		stick2y *= 0.7;
+	}*/
 
 	// if (linear < 0) {
 	// 	angular *= (-1.0);
