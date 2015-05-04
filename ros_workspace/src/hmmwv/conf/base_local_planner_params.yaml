@@ -35,10 +35,10 @@ TrajectoryPlannerROS:
 
   # The tolerance in radians for the controller in yaw/rotation when achieving
   # its goal
-  yaw_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.1
   # The tolerance in merers for the controller in the x and y distance when
   # achieving its goal
-  xy_goal_tolerance: 0.2
+  xy_goal_tolerance: 0.1
   # If the robot reaches the goal xy location it will simply rotate in place,
   # even if it ends up outside the goal tolerance while it is doing so
   latch_xy_goal_tolerance: true
