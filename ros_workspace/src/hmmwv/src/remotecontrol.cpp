@@ -19,6 +19,15 @@ Publisher pub;
 // was released while in motion.
 bool safetyButtonWasPressed = false;
 
+void publishTwist(const float vLinear, const float vAngular, const float vRotational)
+{
+	geometry_msgs::Twist twist;
+	twist.linear.x = vLinear * MAX_DRV_SPEED;
+	twist.angular.y = vRotational * MAX_ROT_SPEED;
+	twist.angular.z = vAngular * MAX_TURN_SPEED;
+	pub.publish(twist);
+}
+
 void updateRemote(const TimerEvent&) {
 	// get axis values
 	// use axis.0 for left/right
@@ -43,9 +52,9 @@ void updateRemote(const TimerEvent&) {
 		if(!safetyButtonWasPressed) {
 			return;
 		} else {
-			angular = 0.0;
-			linear  = 0.0;
-			stick2y = 0.0;
+			publishTwist(0.0, 0.0, 0.0);
+			safetyButtonWasPressed = false;
+			return;
 		}
 	}
 	safetyButtonWasPressed = true;
@@ -68,12 +77,9 @@ void updateRemote(const TimerEvent&) {
 	// }
 
 	// Twist is supposed to contain desired speeds in m/s
-	geometry_msgs::Twist twist;
-	twist.linear.x = linear * MAX_DRV_SPEED;
-	twist.angular.y = stick2y * MAX_ROT_SPEED;
-	twist.angular.z = angular * MAX_TURN_SPEED;
-
-	pub.publish(twist);
+	publishTwist(linear * MAX_DRV_SPEED,
+		stick2y * MAX_ROT_SPEED,
+		angular * MAX_TURN_SPEED);
 }
 
 int main(int argc, char **argv) {
@@ -85,7 +91,7 @@ int main(int argc, char **argv) {
 	}
 	string name = joystick.getName();
 	cout << "Used controller: " << name.c_str() << endl;
-	
+
 	// init ros
 	init(argc, argv, "remotecontrol");
 	NodeHandle n;
