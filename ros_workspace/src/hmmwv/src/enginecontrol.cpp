@@ -158,7 +158,7 @@ float getSpeed(const char motor)
 	const char* output = ss.str().c_str();
 	write(tty, output, ss.str().length());
 	// ROS_INFO("%s", ss.str().c_str());
-	
+
 	// Read response
 	// Expected: max. 11 characters (-2,147,483,647) + \n
 	const int LINE_LENGTH = 11;
@@ -184,7 +184,7 @@ void velocityCallback(const geometry_msgs::Twist& msg) {
 	// Compute the motor speeds necessary to achieve the desired linear and angular motion
 	// Adapted from:
 	// https://code.google.com/p/differential-drive/source/browse/nodes/twist_to_motors.py
-	// self.right = 1.0 * self.dx + self.dr * self.w / 2 
+	// self.right = 1.0 * self.dx + self.dr * self.w / 2
 	// self.left = 1.0 * self.dx - self.dr * self.w / 2
 	double vLeft  = msg.linear.x - msg.angular.z * WHEEL_DISTANCE / (2.0);
 	double vRight = msg.linear.x + msg.angular.z * WHEEL_DISTANCE / (2.0);
