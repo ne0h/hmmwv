@@ -37,9 +37,9 @@ void updateRemote(const TimerEvent&) {
 	vector<bool> buttons = event.getButtons();
 
 	// calculate position values
-	double angular = (-1.0) * axis.at(0) / AXIS_MAX;
+	double angular = (-1.0) * axis.at(2) / AXIS_MAX;
 	double linear  = (-1.0) * axis.at(1) / AXIS_MAX;
-	double stick2y = (-1.0) * axis.at(2) / AXIS_MAX;
+	double stick2y = (-1.0) * axis.at(0) / AXIS_MAX;
 
 	angular = min(max(angular, -1.0), 1.0);
 	linear = min(max(linear, -1.0), 1.0);
