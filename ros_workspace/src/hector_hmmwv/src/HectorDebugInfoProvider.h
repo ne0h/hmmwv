@@ -34,7 +34,7 @@
 
 #include "ros/ros.h"
 
-#include "hector_filetrain/HectorDebugInfo.h"
+#include "hector_hmmwv/HectorDebugInfo.h"
 
 
 class HectorDebugInfoProvider : public HectorDebugInfoInterface
