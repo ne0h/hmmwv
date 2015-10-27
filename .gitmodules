@@ -1,0 +1,3 @@
+[submodule "hector_navigation"]
+	path = hector_navigation
+	url = git@github.com:ne0h/hector_navigation.git
