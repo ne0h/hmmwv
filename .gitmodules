@@ -1,3 +1,6 @@
 [submodule "hector_navigation"]
 	path = hector_navigation
 	url = git@github.com:ne0h/hector_navigation.git
+[submodule "hector_slam"]
+	path = hector_slam
+	url = git@github.com:ne0h/hector_slam.git
