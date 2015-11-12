@@ -36,7 +36,7 @@ HMMWV uses a small x86 computer by Gigabyte as its main computer. Due to the fac
 Build ROS Workspace
 ---------------
 1. Install Ubuntu (build with 14.04 LTS)
-1. Install ROS Indigo stuff (ROS Version >= Groovy necessary because of catkin workspace management) as in the [installation manual](http://wiki.ros.org/hydro/Installation/Ubuntu). You need all the basic libs (*ros-indigo-desktop*), *ros-indigo-ros-tutorials*, *libsdl1.2-dev*, *build-essential*, *ros-indigo-tf*, *ros-indigo-tf2*, *ros-indigo-move-base*, *ros-indigo-tf2-geometry-msgs* and *ros-indigo-hector-map-tools*.
+1. Install ROS Indigo stuff (ROS Version >= Groovy necessary because of catkin workspace management) as in the [installation manual](http://wiki.ros.org/hydro/Installation/Ubuntu). You need all the basic libs (*ros-indigo-desktop*), *ros-indigo-ros-tutorials*, *libsdl1.2-dev*, *build-essential*, *ros-indigo-tf*, *ros-indigo-tf2*, *ros-indigo-move-base* and *ros-indigo-tf2-geometry-msgs*. 
 1. Clone Repository and source */opt/ros/indigo/setup.bash*
 2. Run `git submodules update --init` to clone submodules
 1. Navigate to *./ros_workspace* and type *catkin_make*
