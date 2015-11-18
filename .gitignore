@@ -1,4 +1,7 @@
 *~
-build/
-devel/
+ros_workspace/build/
+ros_workspace/build_isolated/
+ros_workspace/devel/
+ros_workspace/devel_isolated/
+
 *DS_Store
