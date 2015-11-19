@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+	<include file="$(find hmmwv)/launch/hmmwv.launch" />
+	<include file="$(find openni_launch)/launch/openni.launch" />
+	<include file="$(find hmmwv)/launch/costmapping.launch" />
+	<include file="$(find hmmwv)/launch/elevationmapping.launch" />
+
+</launch>
+
