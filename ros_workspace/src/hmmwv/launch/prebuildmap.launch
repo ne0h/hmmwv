@@ -58,6 +58,14 @@
 		<param name="angle_resolution" value="0.5" />
 		<param name="scan_frequency" value="25" />
 	</node>
+	
+	<!--
+		ODOM TRANSFORMER
+	-->
+	<node name="odomtransformer" pkg="hmmwv" type="odomtransformer.py" output="screen">
+		<param name="odom_input" value="/scanmatch_odom" />
+		<param name="tf_output" value="/base_link" />
+	</node>
 
 	<!--
 		HECTOR STUFF
