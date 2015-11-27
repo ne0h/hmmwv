@@ -155,6 +155,7 @@ def findStairway(srcImage, depthImage):
 
 	return (len(stairsFound) > 1)
 
+"""
 srcImage = cv2.imread("stairs.png")
 if not srcImage.data: print("Failed to load image.")
 
@@ -165,3 +166,8 @@ if findStairway(srcImage, depthImage):
 	print("Stairway")
 else:
 	print("No stairway")
+"""
+
+if __name__ == "__main__":
+	rospy.init_node("stairsdetection")
+	rospy.Subscriber("/camera/image/compressed", CompressedImage, ycallback,  queue_size = 1)
