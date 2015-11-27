@@ -34,10 +34,10 @@ coords.sort(key=lambda tup: (tup[0][1]+tup[1][1])/2, reverse=True)
 # filter lines width nearly identical height values and take averge values
 #
 filteredCoords = []
-i = 0
 skipNext = False
 threshold = 20
-for p, q, m in coords:
+for i in range(0, len(coords)):
+	p, q, m = coords[i]
 	if skipNext:
 		skipNext = False
 	else:
@@ -58,8 +58,8 @@ for p, q, m in coords:
 #
 secTimeFiltered = []
 skipNext = False
-i = 0
-for p, q, m in filteredCoords:
+for i in range(0, len(filteredCoords)):
+	p, q, m = filteredCoords[i]
 	if skipNext:
 		skipNext = False
 	else:
@@ -74,58 +74,53 @@ for p, q, m in filteredCoords:
 # try to enlarge lines in both directions. take depth values
 #
 step = 5
-i = 0
 threshold = 3
-for p, q in secTimeFiltered:
-	if i < len(secTimeFiltered) - 1:
-		# enlarge p to the left
-		d     = int(depthImage[p[1]][p[0]][0])
-		dp    = p[0]
-		while (dp > 0):
-			if math.fabs(int(depthImage[p[1]][dp][0]) - d) < threshold:
-				dp -= 10
-			else:
-				break
+for i in range(0, len(secTimeFiltered) - 1):
+	p, q = secTimeFiltered[i]
+	
+	# enlarge p to the left
+	d  = int(depthImage[p[1]][p[0]][0])
+	dp = p[0]
+	while (dp > 0):
+		if math.fabs(int(depthImage[p[1]][dp][0]) - d) < threshold:
+			dp -= 10
+		else:
+			break
 
-		# enlarge q to the right
-		d     = int(depthImage[q[1]][q[0]][0])
-		dq    = q[0]
-		while (dq < width):
-			if math.fabs(int(depthImage[q[1]][dq][0]) - d) < threshold:
-				dq += 10
-			else:
-				break
-		secTimeFiltered[i] = ((dp, p[1]), (dq, q[1]))
-
-		i += 1
+	# enlarge q to the right
+	d  = int(depthImage[q[1]][q[0]][0])
+	dq = q[0]
+	while (dq < width):
+		if math.fabs(int(depthImage[q[1]][dq][0]) - d) < threshold:
+			dq += 10
+		else:
+			break
+	secTimeFiltered[i] = ((dp, p[1]), (dq, q[1]))
 
 #
 # filter again lines width nearly identical height values and take averge value
 #
 trdTimeFiltered = []
-i = 0
 skipNext = False
 threshold = 10
-for p, q in secTimeFiltered:
-	if i < len(secTimeFiltered) - 1:
-		if skipNext:
-			skipNext = False
-		else:
-			# filter lowest 20 pixels near the bottom
-			if math.fabs(height - p[1]) > 20:
-				trdTimeFiltered.append((p, q))
-			if math.fabs(p[1] - secTimeFiltered[i+1][0][1]) < threshold:
-				skipNext = True
-		i += 1
+for i in range(0, len(secTimeFiltered) - 1):
+	p, q = secTimeFiltered[i]
+
+	if skipNext:
+		skipNext = False
+	else:
+		# filter lowest 20 pixels near the bottom
+		if math.fabs(height - p[1]) > 20:
+			trdTimeFiltered.append((p, q))
+		if math.fabs(p[1] - secTimeFiltered[i+1][0][1]) < threshold:
+			skipNext = True
 
 # draw a line for each line
-for p, q in trdTimeFiltered:
+for i in range(0, len(trdTimeFiltered)):
+	p, q = trdTimeFiltered[i]
 	cv2.line(srcImage, (p[0], p[1]), (q[0], q[1]), (0, 0, 255), 2)
-	i += 1
 
-stairFronts = []
-i = 0
-threshold = 3
+"""
 for p, q in trdTimeFiltered:
 	if i < len(trdTimeFiltered) - 1:
 		depth = int(depthImage[p[1]][p[0]][0])
@@ -144,6 +139,18 @@ for p, q in trdTimeFiltered:
 			if math.fabs(depth - depthNext) < 15:
 				stairFronts.append((trdTimeFiltered[i+1][0], q))
 		i += 1
+"""
+
+stairFronts = []
+threshold = 3
+for i in range(1, len(trdTimeFiltered) - 1):
+	p, q = trdTimeFiltered[i]
+
+	depth = int(depthImage[p[1]][p[0]][0])
+	depthNext = int(depthImage[trdTimeFiltered[i+1][0][1]][trdTimeFiltered[i+1][0][0]][0])
+	depthPrev = depthNext = int(depthImage[trdTimeFiltered[i-1][0][1]][trdTimeFiltered[i-1][0][0]][0])
+
+
 
 # draw a rectangle for each stair front
 
