@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-import rospy, message_filters
-from sensor_msgs.msg import Image
-
 import cv2, math, numpy
 from operator import itemgetter
-from cv_bridge import CvBridge, CvBridgeError
 
 def findStairway(rgbImage, depthImage):
 
@@ -18,7 +14,7 @@ def findStairway(rgbImage, depthImage):
 	grayImage = cv2.erode(grayImage, structure, (-1, -1))
 	grayImage = cv2.dilate(grayImage, structure, (-1, -1))
 
-	edges = cv2.Canny(grayImage, 100, 200)
+	edges = cv2.Canny(grayImage, 50, 200)
 	cv2.imwrite("canny.jpg", edges)
 	lines = cv2.HoughLinesP(edges, 1, math.pi/180, 80, 30, 10)
 
@@ -181,25 +177,3 @@ def findStairway(rgbImage, depthImage):
 	#cv2.imwrite("rgb.jpg", rgbImage)
 
 	return (len(stairFronts) > 1)
-
-# Needs to convert ros images to opencv images (numpy array)
-def callback(rgbImage, depthImage):
-
-	if findStairway(CvBridge().imgmsg_to_cv2(rgbImage, "bgr8"),
-			CvBridge().imgmsg_to_cv2(depthImage)):
-		rospy.loginfo("Stairway!")
-	else:
-		rospy.loginfo("No stairway.")
-	import sys
-	sys.exit()
-
-if __name__ == "__main__":
-	rospy.init_node("stairsdetection")
-	
-	rgbImgSub   = message_filters.Subscriber("/camera/rgb/image_color", Image)
-	depthImgSub = message_filters.Subscriber("/camera/depth/image", Image)
-	
-	ts = message_filters.ApproximateTimeSynchronizer([rgbImgSub, depthImgSub], 10, 1)
-	ts.registerCallback(callback)
-
-	rospy.spin()
