@@ -3,6 +3,28 @@
 import cv2, math, numpy
 from operator import itemgetter
 
+def enlargeLine(p, q, depthImage, width, threshold=0.05, step=1):
+		
+	# enlarge p to the left
+	d  = float(depthImage[p[1]][p[0]])
+	dp = p[0]
+	while (dp > 0):
+		if math.fabs(float(depthImage[p[1]][dp]) - d) < threshold:
+			dp -= step
+		else:
+			break
+
+	# enlarge q to the right
+	d  = float(depthImage[q[1]][q[0]])
+	dq = q[0]
+	while (dq < width):
+		if math.fabs(float(depthImage[q[1]][dq]) - d) < threshold:
+			dq += step
+		else:
+			break
+
+	return ((dp, p[1]), (dq, q[1]))
+
 def findStairway(rgbImage, depthImage):
 
 	# transform source image to grayscale and afterwards to binary
@@ -32,100 +54,62 @@ def findStairway(rgbImage, depthImage):
 	coords.sort(key=lambda tUp: (tUp[0][1]+tUp[1][1])/2, reverse=True)
 
 	#
-	# filter lines width nearly identical height values and take averge values
+	# Enlarge lowest line to the left and the right and calculate the width of the staircase.
 	#
-	filteredCoords = []
+	bottomP, bottomQ = enlargeLine(coords[0][0], coords[0][1], depthImage, width)
+
+	#
+	# Remove all lines that are left or right of the base line.
+	#
+	leftRightFiltered = []
+	for p, q, avgHgt in coords:
+		if not (p[0] < bottomP[0] or q[0] > bottomQ[0]):
+			leftRightFiltered.append((p, q, avgHgt))
+	
+	#
+	# Remove lines with same depth value.
+	#
+	threshold = 0.05
+	depthFiltered = []
+	doNotAdd = []
+	for i in range(0, len(leftRightFiltered)):
+		pCur, qCur, avgCur = leftRightFiltered[i]
+		for j in range(i + 1, len(leftRightFiltered)):
+			pNew, qNew, avgNew = leftRightFiltered[j]
+			if math.fabs(depthImage[avgCur][pCur[0]] - depthImage[avgNew][pNew[0]]) < threshold:
+				doNotAdd.append(i)
+				break
+	for i in range(0, len(leftRightFiltered)):
+		if i not in doNotAdd:
+			depthFiltered.append((leftRightFiltered[i]))
+
+	#
+	# Try to enlarge lines in both directions. Therefor take depth values
+	#
+	for i in range(0, len(depthFiltered)):
+		p, q = enlargeLine(depthFiltered[i][0], depthFiltered[i][1], depthImage, width)
+		depthFiltered[i] = (p, q, depthFiltered[i][2])
+
+	#
+	# Filter lines width nearly identical height values.
+	#
+	sameHeightFiltered = []
 	skipNext = False
-	threshold = 20
-	for i in range(0, len(coords)):
-		p, q, avgHgt = coords[i]
+	threshold = 10
+	for i in range(0, len(depthFiltered)):
+		p, q, avgHgt = depthFiltered[i]
 		if skipNext:
 			skipNext = False
 		else:
 			# filter lowest 20 pixels
 			if height - avgHgt > 20:
-				if i < len(coords) - 1 and (avgHgt - coords[i+1][2]) < threshold:
-					pNew = ((p[0] + coords[i+1][0][0]) / 2, (p[1] + coords[i+1][0][1]) / 2)
-					qNew = ((q[0] + coords[i+1][1][0]) / 2, (q[1] + coords[i+1][1][1]) / 2)
-					filteredCoords.append((pNew, qNew, avgHgt))
+				if i < len(depthFiltered) - 1 and (avgHgt - depthFiltered[i+1][2]) < threshold:
+					pNew = ((p[0] + depthFiltered[i+1][0][0]) / 2, (p[1] + depthFiltered[i+1][0][1]) / 2)
+					qNew = ((q[0] + depthFiltered[i+1][1][0]) / 2, (q[1] + depthFiltered[i+1][1][1]) / 2)
+					sameHeightFiltered.append((pNew, qNew, avgHgt))
 					skipNext = True
 				else:
-					filteredCoords.append((p, q, avgHgt))
-
-	#
-	# Remove lines with same depth value.
-	#
-	secTimeFiltered = []
-	skipNext = False
-	for i in range(0, len(filteredCoords)):
-		p, q, m = filteredCoords[i]
-		if skipNext:
-			skipNext = False
-		else:
-			if i < len(filteredCoords) - 1:
-				mNext = filteredCoords[i+1][2]
-
-				# add this line and check if the next line has the same depth value.
-				# If so skip the next one
-				secTimeFiltered.append((p, q))
-
-				if depthImage[m][width/2] == depthImage[mNext][width/2]:
-					skipNext = True
-
-	#
-	# Try to enlarge lines in both directions. Take depth values
-	#
-	step = 1
-	threshold = 0.05
-	for i in range(0, len(secTimeFiltered) - 1):
-		p, q = secTimeFiltered[i]
-		
-		# enlarge p to the left
-		d  = float(depthImage[p[1]][p[0]])
-		dp = p[0]
-		while (dp > 0):
-			if math.fabs(float(depthImage[p[1]][dp]) - d) < threshold:
-				dp -= 10
-			else:
-				break
-
-		# enlarge q to the right
-		d  = float(depthImage[q[1]][q[0]])
-		dq = q[0]
-		while (dq < width):
-			if math.fabs(float(depthImage[q[1]][dq]) - d) < threshold:
-				dq += 10
-			else:
-				break
-		secTimeFiltered[i] = ((dp, p[1]), (dq, q[1]))
-
-	for i in range(0, len(secTimeFiltered)):
-		p, q = secTimeFiltered[i]
-		cv2.line(rgbImage, (p[0], p[1]), (q[0], q[1]), (0, 0, 255), 2)
-	cv2.imwrite("rgb.jpg", rgbImage)
-
-	#
-	# Filter again lines width nearly identical height values and take averge value.
-	#
-	trdTimeFiltered = []
-	skipNext = False
-	threshold = 10
-	for i in range(0, len(secTimeFiltered) - 1):
-		p, q = secTimeFiltered[i]
-
-		if skipNext:
-			skipNext = False
-		else:
-			# filter lowest 20 pixels near the bottom
-			if math.fabs(height - p[1]) > 20:
-				trdTimeFiltered.append((p, q))
-			if math.fabs(p[1] - secTimeFiltered[i+1][0][1]) < threshold:
-				skipNext = True
-
-	# draw a line for each line
-	for i in range(0, len(trdTimeFiltered)):
-		p, q = trdTimeFiltered[i]
-		cv2.line(rgbImage, (p[0], p[1]), (q[0], q[1]), (0, 0, 255), 2)
+					sameHeightFiltered.append((p, q, avgHgt))
 
 	# Compare depth values of every second line with the depth value of the next line to
 	# the bottom and the next line to the top to find stairs.
@@ -133,14 +117,14 @@ def findStairway(rgbImage, depthImage):
 	# check points next to this one.
 	stairFronts = []
 	threshold = 0.1
-	for i in range(0, len(trdTimeFiltered)):
-			p, q = trdTimeFiltered[i]
+	for i in range(1, len(sameHeightFiltered)):
+			p, q, _ = sameHeightFiltered[i]
 			depth = float(depthImage[p[1]][p[0]])
 
 			# compare values, check if the indexes exist before
 			# start with value next to the top...
-			if i < len(trdTimeFiltered) - 1:
-				pNext, qNext = trdTimeFiltered[i+1]
+			if i < len(sameHeightFiltered) - 1:
+				pNext, qNext, _ = sameHeightFiltered[i+1]
 				try:
 					depthNext = float(depthImage[pNext[1]][qNext[0]])
 				except:
@@ -158,7 +142,7 @@ def findStairway(rgbImage, depthImage):
 						stairFronts.append((pNext, q))
 			# ...and go on with prev value
 			if i > 1:
-				pPrev, qPrev = trdTimeFiltered[i-1]
+				pPrev, qPrev, _ = sameHeightFiltered[i-1]
 				depthPrev = depthNext = float(depthImage[pPrev[1]][qPrev[0]])
 
 				if math.fabs(depth - depthPrev) < threshold:
@@ -170,10 +154,15 @@ def findStairway(rgbImage, depthImage):
 					if math.fabs(depth - depthNew) < 15:
 						stairFronts.append((p, qPrev))
 
-	# Removes
+	"""
+	for i in range(0, len(sameHeightFiltered)):
+		p, q, _ = sameHeightFiltered[i]
+		cv2.line(rgbImage, (p[0], p[1]), (q[0], q[1]), (0, 0, 255), 2)
+	cv2.imwrite("rgb.jpg", rgbImage)
 
 	for p, q in stairFronts:
 		cv2.rectangle(rgbImage, p, q, (0, 255, 0))
-	#cv2.imwrite("rgb.jpg", rgbImage)
+	cv2.imwrite("rgb.jpg", rgbImage)
+	"""
 
 	return (len(stairFronts) > 1)
