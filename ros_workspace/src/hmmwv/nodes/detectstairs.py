@@ -8,23 +8,23 @@ class DetectStairs:
 	def __enlargeLine(self, p, q, threshold=0.05, step=1):
 		
 		# enlarge p to the left
-		d  = self.__getDepthValue(p[1], p[0])
+		d  = self.__getDepthValue(p[0], p[1])
 		dp = p[0]
 		while (dp > 0):
-			if math.fabs(self.__getDepthValue(p[1], dp) - d) < threshold:
+			if math.fabs(self.__getDepthValue(dp, p[1]) - d) < threshold:
 				dp -= step
 			else:
 				break
-
+		
 		# enlarge q to the right
-		d  = self.__getDepthValue(q[1], q[0])
+		d  = self.__getDepthValue(q[0], q[1])
 		dq = q[0]
 		while (dq < self.__width):
-			if math.fabs(self.__getDepthValue(q[1], dq) - d) < threshold:
+			if math.fabs(self.__getDepthValue(dq, q[1]) - d) < threshold:
 				dq += step
 			else:
 				break
-
+		
 		return ((dp, p[1]), (dq, q[1]))
 
 	def __removeNonHorizontalLines(self, lines, tolerance=5):
@@ -48,12 +48,37 @@ class DetectStairs:
 			pCur, qCur, avgCur = lines[i]
 			for j in range(i + 1, len(lines)):
 				pNew, qNew, avgNew = lines[j]
-				if math.fabs(self.__getDepthValue(avgCur[1], pCur[0]) - self.__getDepthValue(avgNew[1], pNew[0])) < threshold:
+				if math.fabs(self.__getDepthValue(pCur[0], avgCur[1]) - self.__getDepthValue(pNew[0], avgNew[1])) < threshold:
 					doNotAdd.append(i)
 					break
 		for i in range(0, len(lines)):
 			if i not in doNotAdd:
 				result.append((lines[i]))
+		return result
+
+	def __removeLinesWithSameHeight(self, lines, threshold=10):
+		result = []
+		"""
+		for i in range(0, len(lines)):
+			pCur, qCur, avgCur = lines[i]
+			for j in range(i, len(lines)):
+				pNew, qNew, avgNew = lines[j]
+				if math.fabs(avgCur[1] - avgNew[1]) < threshold:
+					doNotAdd.append(i)
+		for i in range(0, len(lines)):
+			if i not in doNotAdd:
+				result.append((lines[i]))
+		"""
+
+		i = 0
+		while i < len(lines):
+			result.append((lines[i]))
+			pCur, qCur, avgCur = lines[i]
+			for j in range(i, len(lines)):
+				pNew, qNew, avgNew = lines[j]
+				if not math.fabs(avgCur[1] - avgNew[1]) < threshold:
+					i = j
+
 		return result
 
 	def calculate(self):
@@ -85,7 +110,7 @@ class DetectStairs:
 		# Enlarge lowest line to the left and the right and calculate the width of the staircase.
 		#
 		bottomP, bottomQ = self.__enlargeLine(coords[0][0], coords[0][1])
-
+		cv2.line(self.__rgbImage, (bottomP[0], bottomP[1]), (bottomQ[0], bottomQ[1]), (0, 255, 0), 2)
 		#
 		# Remove all lines that are left or right of the base line.
 		#
@@ -98,16 +123,11 @@ class DetectStairs:
 		# Remove non-horizontal lines
 		#
 		horizontalFiltered = self.__removeNonHorizontalLines(leftRightFiltered)
-
-		#
-		# Remove alle lines that are shorter than 25% of the image width
-		#
-		shortLinesFiltered = self.__removeShortLines(horizontalFiltered)
 		
 		#
 		# Remove lines with same depth value.
 		#
-		depthFiltered = self.__removeLinesWithSameDepth(shortLinesFiltered)
+		depthFiltered = self.__removeLinesWithSameDepth(horizontalFiltered)
 
 		#
 		# Try to enlarge lines in both directions. Therefor take depth values
@@ -117,25 +137,18 @@ class DetectStairs:
 			depthFiltered[i] = (p, q, depthFiltered[i][2])
 
 		#
+		# Remove alle lines that are shorter than 25% of the image width
+		#
+		shortLinesFiltered = self.__removeShortLines(depthFiltered)
+
+		#
 		# Filter lines width nearly identical height values.
 		#
-		sameHeightFiltered = []
-		skipNext = False
-		threshold = 10
-		for i in range(0, len(depthFiltered)):
-			p, q, avgHgt = depthFiltered[i]
-			if skipNext:
-				skipNext = False
-			else:
-				# filter lowest 20 pixels
-				if self.__height - avgHgt[1] > 20:
-					if i < len(depthFiltered) - 1 and (avgHgt[1] - depthFiltered[i+1][2][1]) < threshold:
-						pNew = ((p[0] + depthFiltered[i+1][0][0]) / 2, (p[1] + depthFiltered[i+1][0][1]) / 2)
-						qNew = ((q[0] + depthFiltered[i+1][1][0]) / 2, (q[1] + depthFiltered[i+1][1][1]) / 2)
-						sameHeightFiltered.append((pNew, qNew, avgHgt))
-						skipNext = True
-					else:
-						sameHeightFiltered.append((p, q, avgHgt))
+		heightFiltered = self.__removeLinesWithSameHeight(shortLinesFiltered)
+
+		for i in range(0, len(heightFiltered)):
+			p, q, _ = heightFiltered[i]
+			cv2.line(self.__rgbImage, (p[0], p[1]), (q[0], q[1]), (0, 0, 255), 2)
 
 		# Compare depth values of every second line with the depth value of the next line to
 		# the bottom and the next line to the top to find stairs.
@@ -144,42 +157,38 @@ class DetectStairs:
 		stairFronts = []
 		threshold = 0.1
 		tolerance = 10
-		for i in range(1, len(sameHeightFiltered)):
-			pCur, qCur, avgCur = sameHeightFiltered[i]
-			depthCur = self.__getDepthValue(avgCur[1], avgCur[0])
+		for i in range(1, len(heightFiltered)):
+			pCur, qCur, avgCur = heightFiltered[i]
+			depthCur = self.__getDepthValue(avgCur[0], avgCur[1])
 			"""
 			# compare values, check if the indexes exist before
 			# start with value next to the top...
-			if i < len(sameHeightFiltered) - 1:
-				pNext, qNext, avgNext = sameHeightFiltered[i+1]
-				depthNext = self.__getDepthValue(pNext[1], qNext[0])
+			if i < len(heightFiltered) - 1:
+				pNext, qNext, avgNext = heightFiltered[i+1]
+				depthNext = self.__getDepthValue(qNext[0], pNext[1])
 
 				if math.fabs(depthCur - depthNext) < threshold:
 					stairFronts.append((pNext, qCur))
 				# if nothing found check value 
 				else:
 					avgCurNew = (avgCur[0], avgCur[1] - tolerance)
-					depthCurNew = self.__getDepthValue(avgCurNew[1], avgCurNew[0])
+					depthCurNew = self.__getDepthValue(avgCurNew[0], avgCurNew[1])
 					if math.fabs(depthNext - depthCurNew) < tolerance:
 						stairFronts.append((pNext, q))
 			"""
 			# ...and go on with prev value
 			if i > 0:
-				pPrev, qPrev, avgPrev = sameHeightFiltered[i-1]
-				depthPrev = self.__getDepthValue(avgPrev[1], avgPrev[0])
+				pPrev, qPrev, avgPrev = heightFiltered[i-1]
+				depthPrev = self.__getDepthValue(avgPrev[0], avgPrev[1])
 
 				if math.fabs(depthCur - depthPrev) < threshold:
 					stairFronts.append((pCur, qPrev))
 				# if nothing found check value 
 				else:
 					avgCurNew = (avgCur[0], avgCur[1] + tolerance)
-					depthCurNew = self.__getDepthValue(avgCurNew[1], avgCurNew[0])
+					depthCurNew = self.__getDepthValue(avgCurNew[0], avgCurNew[1])
 					if math.fabs(depthPrev - depthCurNew) < threshold:
-						stairFronts.append((pCur, qPrev))			
-
-		for i in range(0, len(sameHeightFiltered)):
-			p, q, _ = sameHeightFiltered[i]
-			cv2.line(self.__rgbImage, (p[0], p[1]), (q[0], q[1]), (0, 0, 255), 2)
+						stairFronts.append((pCur, qPrev))
 
 		#for p, q in stairFronts:
 		#	cv2.rectangle(rgbImage, p, q, (0, 255, 0))
