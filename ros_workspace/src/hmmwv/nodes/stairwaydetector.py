@@ -7,12 +7,13 @@ import cv2, math, numpy
 from operator import itemgetter
 from cv_bridge import CvBridge, CvBridgeError
 
-import detectstairs
+from detectstairs import DetectStairs
 
 # Needs to convert ros images to opencv images (numpy array)
 def callback(rgbImage, depthImage):
-
-	if detectstairs.findStairway(CvBridge().imgmsg_to_cv2(rgbImage, "bgr8"), CvBridge().imgmsg_to_cv2(depthImage)):
+	print("Callback!")
+	if DetectStairs(CvBridge().imgmsg_to_cv2(rgbImage, "bgr8"),
+			CvBridge().imgmsg_to_cv2(depthImage)).calculate():
 		rospy.loginfo("Stairway!")
 	else:
 		rospy.loginfo("No stairway.")
@@ -25,7 +26,7 @@ if __name__ == "__main__":
 	rgbImgSub   = message_filters.Subscriber("/camera/rgb/image_color", Image)
 	depthImgSub = message_filters.Subscriber("/camera/depth/image", Image)
 	
-	ts = message_filters.ApproximateTimeSynchronizer([rgbImgSub, depthImgSub], 10, 1)
+	ts = message_filters.ApproximateTimeSynchronizer([rgbImgSub, depthImgSub], 10, 2)
 	ts.registerCallback(callback)
 
 	rospy.spin()
