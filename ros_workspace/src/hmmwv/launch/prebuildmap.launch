@@ -7,7 +7,7 @@
 		<param name="tf_broadcast" value="true" />
 		<param name="base_frame_id" value="/base_link" />
 		<param name="global_frame_id" value="/map" />
-		<param name="odom_frame_id" value="/scanmatcher_odom" />
+		<param name="odom_frame_id" value="/base_link" />
 		<param name="use_map_topic" value="false" />
 
 	    <remap from="scan" to="/lms100/scan" />
@@ -105,7 +105,7 @@
 
 	<!--
 		NAVIGATION STUFF
-	-->
+	
 
 	<node name="move_base" pkg="move_base" type="move_base" output="screen">
 		<param name="controller_frequency" value="10.0" />
@@ -119,6 +119,6 @@
 		
 		<rosparam file="$(find hmmwv)/conf/base_local_planner_params.yaml" command="load" />
 	</node>
-
+	-->
 
 </launch>
