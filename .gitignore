@@ -5,3 +5,4 @@ ros_workspace/devel/
 ros_workspace/devel_isolated/
 
 *DS_Store
+.idea/
