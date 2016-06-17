@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 
-#include "joystick.hpp"
+#include <joystick.hpp>
 
 using namespace std;
 
