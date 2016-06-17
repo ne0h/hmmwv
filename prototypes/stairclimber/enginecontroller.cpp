@@ -4,76 +4,74 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <thread>
+#include <chrono>
+#include <cmath>
 
 #include <joystick.hpp>
+#include "i2c.h"
 
 using namespace std;
 
-const int AXIS_MAX = 32767;
+const double SENSITIVITY	= 16384;
+const double PROCESS_NOISE	= 0.1;
+const double SENSOR_NOISE	= 64.0;
+const double INITIAL_Q		= 100.0;
+const int AXIS_MAX			= 32767;
+
+typedef struct {
+	double q, r, x, p, k;
+} kalman;
+
 Joystick joystick;
+kalman kx, ky, kz;
 
-int writeSysFs(const string path, const string value) {
-	ofstream file(path.c_str());
-	if (!file) {
-		cerr << "Could not open " << path << endl;
-		return -1;
-	}
+kalman kalman_init(double initial_value) {
+	kalman result;
 
-	file << value;
-	file.close();
+	result.q = PROCESS_NOISE;
+	result.r = SENSOR_NOISE;
+	result.p = INITIAL_Q;
+	result.x = initial_value;
 
-	return 0;
+	return result;
 }
 
-int writeSysFs(const string path, const int value) {
-	writeSysFs(path, to_string(value));
-}
-
-void exportPin(const int pin) {
-	writeSysFs("/sys/class/gpio/export", pin);
-
-	stringstream ss;
-	ss << "/sys/class/gpio/gpio" << pin << "/direction";
-	writeSysFs(ss.str(), "out");
-}
-
-void setPin(const int pin, const int value) {
-	stringstream ss;
-	ss << "/sys/class/gpio/gpio" << pin << "/value";
-	writeSysFs(ss.str(), value);
+void kalman_update(kalman *k, double value) {
+	k->p = k->p + k->q;
+	k->k = k->p / (k->p + k->r);
+	k->x = k->x + k->k * (value - k->x);
+	k->p = (1 - k->k) * k->p;
 }
 
 int main() {
+	
+	const int addr = 0x68;
+	const int fd = i2c_init("/dev/i2c-1");
+	
+	uint8_t buf[6] = {0};
+	i2c_write(fd, addr, buf, 1);
+	
+	kx = kalman_init(0);
+	ky = kalman_init(0);
+	kz = kalman_init(0);
+	
+	while (1) {
+		i2c_read(fd, addr, 0x3b, 6, buf);
+		const double ax = (uint16_t(((int16_t)buf[0]) << 8) | buf[1]) / SENSITIVITY;
+		const double ay = (uint16_t(((int16_t)buf[2]) << 8) | buf[3]) / SENSITIVITY;
+		const double az = (uint16_t(((int16_t)buf[4]) << 8) | buf[5]) / SENSITIVITY;
+		
+		kalman_update(&kx, ax);
+		kalman_update(&ky, ay);
+		kalman_update(&kz, az);
 
-	if (!joystick.init()) {
-		cout << "Could not find a joystick!\n";
-		return 1;
-	}
-
-	const string name = joystick.getName();
-	cout << "Used controller: " << name.c_str() << endl;
-
-	exportPin(67);
-	exportPin(68);
-
-	bool run = true;
-	while(run) {
-		JoystickEvent event = joystick.getEvent();
-		vector<short> axis = event.getAxis();
-		vector<bool> buttons = event.getButtons();
-
-		if (buttons.at(0)) {
-			run = false;
-		}
-
-		double leftController  = (-1.0) * axis.at(1) / AXIS_MAX;
-		double rightController = (-1.0) * axis.at(2) / AXIS_MAX;
-
-		if (leftController > 0.0f) {
-			setPin(67, 1);
-		} else {
-			setPin(67, 0);
-		}
+		double roll  = atan2(-(ky.x), kz.x) * 180.0/M_PI;
+		double pitch = atan2(kx.x, sqrt(ky.x*ky.x + kz.x*kz.x)) * 180.0/M_PI;
+		
+		cout << roll << "\t\t" << pitch << endl;
+		
+		this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
 	return 0;

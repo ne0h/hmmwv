@@ -6,6 +6,7 @@ include_directories(../../ros_workspace/src/hmmwv/src/)
 add_executable(stairclimber
 	../../ros_workspace/src/hmmwv/src/joystick.cpp
 	../../ros_workspace/src/hmmwv/src/joystickevent.cpp
+	i2c.c
 	enginecontroller.cpp
 )
 target_link_libraries(stairclimber SDL)
