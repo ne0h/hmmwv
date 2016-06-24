@@ -7,6 +7,7 @@ add_executable(stairclimber
 	../../ros_workspace/src/hmmwv/src/joystick.cpp
 	../../ros_workspace/src/hmmwv/src/joystickevent.cpp
 	gpio.cpp
+	engine.cpp
 	enginecontroller.cpp
 )
 target_link_libraries(stairclimber SDL)

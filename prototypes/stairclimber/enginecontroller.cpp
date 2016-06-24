@@ -10,14 +10,13 @@
 
 #include <joystick.hpp>
 #include "gpio.hpp"
-
-using namespace std;
+#include "engine.hpp"
 
 using namespace std;
 
 const int AXIS_MAX = 32767;
-const double AXIS_THRS = 0.01;
-const double PWM_DUTYMAX = 0.9;
+const double AXIS_THRS = 0.1;
+const double PWM_DUTYMAX = 0.99;
 Joystick joystick;
 GPIO gpio;
 
@@ -31,8 +30,8 @@ int main() {
 	const string name = joystick.getName();
 	cout << "Used controller: " << name.c_str() << endl;
 
-	gpio.setPin(GPIO::P8_08, false);
-	gpio.setPwm(GPIO::P8_13, 0.f);
+	Engine frontLeftEngine (&gpio, GPIO::P8_08, GPIO::P8_13);
+	Engine frontRightEngine(&gpio, GPIO::P8_10, GPIO::P8_19);
 
 	bool run = true;
 	while(run) {
@@ -44,23 +43,77 @@ int main() {
 			run = false;
 		}
 
-		double leftController  = (-1.0) * axis.at(1) / AXIS_MAX;
-		if (leftController >  PWM_DUTYMAX) leftController =  PWM_DUTYMAX;
-		if (leftController < -1.0 * PWM_DUTYMAX) leftController = -1.0 * PWM_DUTYMAX;
-		double rightController = (-1.0) * axis.at(2) / AXIS_MAX;
-		if (rightController >  PWM_DUTYMAX) rightController =  PWM_DUTYMAX;
-		if (rightController < -1.0 * PWM_DUTYMAX) rightController = -1.0 * PWM_DUTYMAX;
-		
+		double accController  = (-1.0) * axis.at(1) / AXIS_MAX;
+		if (accController >  PWM_DUTYMAX) accController =  PWM_DUTYMAX;
+		if (accController < -1.0 * PWM_DUTYMAX) accController = -1.0 * PWM_DUTYMAX;
+		double dirController  =  axis.at(0) / AXIS_MAX;
+		if (dirController >  PWM_DUTYMAX) dirController =  PWM_DUTYMAX;
+		if (dirController < -1.0 * PWM_DUTYMAX) dirController = -1.0 * PWM_DUTYMAX;
 
-		if (abs(leftController - AXIS_THRS) && leftController > 0.0) {
-			gpio.setPin(GPIO::P8_08, true);
-			gpio.setPwm(GPIO::P8_13, abs(leftController));
-		} else if (abs(leftController - AXIS_THRS) && leftController < 0.0) {
-			gpio.setPin(GPIO::P8_08, false);
-			gpio.setPwm(GPIO::P8_13, abs(leftController));
+		//cout << accController << "|" << dirController << endl;
+
+		if (abs(accController) > AXIS_THRS || abs(dirController) > AXIS_THRS) {
+
+			// drive forward
+			if (accController >= 0.0) {
+				
+				const double value = (accController == 0.0) ? 0.99 : 0.99 * accController;
+				if (dirController == -0.99) {
+					frontLeftEngine.forward(value);
+					frontRightEngine.backward(value);
+					continue;
+				} else if (dirController == 0.99) {
+					frontLeftEngine.backward(value);
+					frontRightEngine.forward(value);
+					continue;
+				}
+
+				if (abs(dirController) < AXIS_THRS) {
+					frontLeftEngine.forward(accController);
+					frontRightEngine.forward(accController);
+				} else {
+					// drive forward left
+					if (dirController < 0.0) {
+						frontLeftEngine.forward(accController);
+						frontRightEngine.backward(1 - abs(accController));
+					// drive forward right
+					} else {
+						frontLeftEngine.forward(1 - abs(accController));
+						frontRightEngine.backward(accController);
+					}
+				}
+			} else {
+
+				// backwards
+				const double value = (accController == 0.0) ? 0.99 : 0.99 * accController;
+				if (dirController == -0.99) {
+					frontLeftEngine.backward(value);
+					frontRightEngine.forward(value);
+					continue;
+				} else if (dirController == 0.99) {
+					frontLeftEngine.forward(value);
+					frontRightEngine.backward(value);
+					continue;
+				}
+
+				if (abs(dirController) < AXIS_THRS) {
+					frontLeftEngine.backward(abs(accController));
+					frontRightEngine.backward(abs(accController));
+				} else {
+					// drive forward left
+					if (dirController < 0.0) {
+						frontLeftEngine.backward(accController);
+						frontRightEngine.forward(1 - abs(accController));
+					// drive forward right
+					} else {
+						frontLeftEngine.backward(1 - abs(accController));
+						frontRightEngine.forward(accController);
+					}
+				}
+			}
 		} else {
-			gpio.setPin(GPIO::P8_08, false);
-			gpio.setPwm(GPIO::P8_13, 0.0);
+			frontLeftEngine.stop();
+			frontRightEngine.stop();
 		}
 	}
 
