@@ -5,8 +5,16 @@
 
 // connection settings
 const uint32_t	BAUDRATE		=	115200;
-const uint8_t	BUFFER_LENGTH	=	16;
+const uint8_t	BUFFER_LENGTH	=	128;
 const uint8_t	CMD_LENGTH		=	4;
+
+// tft settings
+const uint8_t	TFT_RST 		=	8;
+const uint8_t	TFT_RS			=	9;
+const uint8_t	TFT_CS			=	53;		// SS
+const uint8_t	TFT_SDI			=	51;		// MOSI
+const uint8_t	TFT_CLK			=	52;		// SCK
+const uint8_t	TFT_LED			=	3;		// 0 if wired to +5V directly
 
 // pin settings
 const uint8_t	DRIVE_LEFT_EN	=	35;
@@ -26,6 +34,8 @@ const uint8_t	ROTATE_RIGHT_DIR =	30;
 const uint8_t	ROTATE_RIGHT_SPD =	6;
 
 // commands
+const char CMD_PRINT_LOAD[]					= "ptld";
+
 const char CMD_SET_DRIVE_LEFT_FORWARD[]		= "sdlf";
 const char CMD_SET_DRIVE_LEFT_BACKWARD[]	= "sdlb";
 const char CMD_SET_DRIVE_LEFT_STOP[]		= "sdls";
