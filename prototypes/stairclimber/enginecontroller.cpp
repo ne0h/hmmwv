@@ -32,6 +32,8 @@ int main() {
 
 	Engine frontLeftEngine (&gpio, GPIO::P8_08, GPIO::P8_13);
 	Engine frontRightEngine(&gpio, GPIO::P8_10, GPIO::P8_19);
+	Engine backLeftEngine  (&gpio, GPIO::P9_17, GPIO::P9_14);
+	Engine backRightEngine (&gpio, GPIO::P9_18, GPIO::P9_16);
 
 	bool run = true;
 	while(run) {
@@ -50,8 +52,6 @@ int main() {
 		if (dirController >  PWM_DUTYMAX) dirController =  PWM_DUTYMAX;
 		if (dirController < -1.0 * PWM_DUTYMAX) dirController = -1.0 * PWM_DUTYMAX;
 
-		//cout << accController << "|" << dirController << endl;
-
 		if (abs(accController) > AXIS_THRS || abs(dirController) > AXIS_THRS) {
 
 			// drive forward
@@ -61,25 +61,35 @@ int main() {
 				if (dirController == -0.99) {
 					frontLeftEngine.forward(value);
 					frontRightEngine.backward(value);
+					backLeftEngine.forward(value);
+					backRightEngine.backward(value);
 					continue;
 				} else if (dirController == 0.99) {
 					frontLeftEngine.backward(value);
 					frontRightEngine.forward(value);
+					backLeftEngine.backward(value);
+					backRightEngine.forward(value);
 					continue;
 				}
 
 				if (abs(dirController) < AXIS_THRS) {
 					frontLeftEngine.forward(accController);
 					frontRightEngine.forward(accController);
+					backLeftEngine.forward(accController);
+					backRightEngine.forward(accController);
 				} else {
 					// drive forward left
 					if (dirController < 0.0) {
 						frontLeftEngine.forward(accController);
 						frontRightEngine.backward(1 - abs(accController));
+						backLeftEngine.forward(accController);
+						backRightEngine.backward(1 - abs(accController));
 					// drive forward right
 					} else {
 						frontLeftEngine.forward(1 - abs(accController));
 						frontRightEngine.backward(accController);
+						backLeftEngine.forward(1 - abs(accController));
+						backRightEngine.backward(accController);
 					}
 				}
 			} else {
@@ -89,31 +99,43 @@ int main() {
 				if (dirController == -0.99) {
 					frontLeftEngine.backward(value);
 					frontRightEngine.forward(value);
+					backLeftEngine.backward(value);
+					backRightEngine.forward(value);
 					continue;
 				} else if (dirController == 0.99) {
 					frontLeftEngine.forward(value);
 					frontRightEngine.backward(value);
+					backLeftEngine.forward(value);
+					backRightEngine.backward(value);
 					continue;
 				}
 
 				if (abs(dirController) < AXIS_THRS) {
 					frontLeftEngine.backward(abs(accController));
 					frontRightEngine.backward(abs(accController));
+					backLeftEngine.backward(abs(accController));
+					backRightEngine.backward(abs(accController));
 				} else {
 					// drive forward left
 					if (dirController < 0.0) {
 						frontLeftEngine.backward(accController);
 						frontRightEngine.forward(1 - abs(accController));
+						backLeftEngine.backward(accController);
+						backRightEngine.forward(1 - abs(accController));
 					// drive forward right
 					} else {
 						frontLeftEngine.backward(1 - abs(accController));
 						frontRightEngine.forward(accController);
+						backLeftEngine.backward(1 - abs(accController));
+						backRightEngine.forward(accController);
 					}
 				}
 			}
 		} else {
 			frontLeftEngine.stop();
 			frontRightEngine.stop();
+			backLeftEngine.stop();
+			backRightEngine.stop();
 		}
 	}
 
