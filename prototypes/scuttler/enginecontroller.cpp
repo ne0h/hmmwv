@@ -29,27 +29,27 @@ void calculateEngineValues(double accController, double dirController, double *l
 				
 			const double value = (accController == 0.0) ? 0.99 : 0.99 * accController;
 			if (dirController == -0.99) {
-				*leftValue  = value; //frontLeftEngine.forward(value);
-				*rightValue = value * (-1); //frontRightEngine.backward(value);
+				*leftValue  = value;
+				*rightValue = value * (-1);
 				return;
 			} else if (dirController == 0.99) {
-				*leftValue  = value * (-1); //frontLeftEngine.backward(value);
-				*rightValue = value; //frontRightEngine.forward(value);
+				*leftValue  = value * (-1);
+				*rightValue = value;
 				return;
 			}
 
 			if (abs(dirController) < AXIS_THRS) {
-				*leftValue  = accController; //frontLeftEngine.forward(accController);
-				*rightValue = accController; //frontRightEngine.forward(accController);
+				*leftValue  = accController;
+				*rightValue = accController;
 			} else {
 				// drive forward left
 				if (dirController < 0.0) {
-					*leftValue  = accController; //frontLeftEngine.forward(accController);
-					*rightValue = (-1) * (1 - abs(accController)); //frontRightEngine.backward(1 - abs(accController));
+					*leftValue  = accController;
+					*rightValue = (-1) * (1 - abs(accController));
 				// drive forward right
 				} else {
-					*leftValue  = 1 - abs(accController); //frontLeftEngine.forward(1 - abs(accController));
-					*rightValue = (-1) * accController; //frontRightEngine.backward(accController);
+					*leftValue  = 1 - abs(accController);
+					*rightValue = (-1) * accController;
 				}
 			}
 		} else {
@@ -57,33 +57,33 @@ void calculateEngineValues(double accController, double dirController, double *l
 			// backwards
 			const double value = (accController == 0.0) ? 0.99 : 0.99 * accController;
 			if (dirController == -0.99) {
-				*leftValue  = (-1) * value; //frontLeftEngine.backward(value);
-				*rightValue = value; //frontRightEngine.forward(value);
+				*leftValue  = (-1) * value;
+				*rightValue = value;
 				return;
 			} else if (dirController == 0.99) {
-				*leftValue = value; //frontLeftEngine.forward(value);
-				*rightValue = (-1) * value; //frontRightEngine.backward(value);
+				*leftValue = value;
+				*rightValue = (-1) * value;
 				return;
 			}
 
 			if (abs(dirController) < AXIS_THRS) {
-				*leftValue  = (-1) * (abs(accController)); //frontLeftEngine.backward(abs(accController));
-				*rightValue = (-1) * (abs(accController)); //frontRightEngine.backward(abs(accController));
+				*leftValue  = (-1) * (abs(accController));
+				*rightValue = (-1) * (abs(accController));
 			} else {
 				// drive forward left
 				if (dirController < 0.0) {
-					*leftValue  = (-1) * accController; //frontLeftEngine.backward(accController);
-					*rightValue = 1 - abs(accController); //frontRightEngine.forward(1 - abs(accController));
+					*leftValue  = (-1) * accController;
+					*rightValue = 1 - abs(accController);
 				// drive forward right
 				} else {
-					*leftValue  = (-1) * (1 - abs(accController)); //frontLeftEngine.backward(1 - abs(accController));
-					*rightValue = accController; //frontRightEngine.forward(accController);
+					*leftValue  = (-1) * (1 - abs(accController));
+					*rightValue = accController;
 				}
 			}
 		}
 	} else {
-		leftValue = 0; //frontLeftEngine.stop();
-		rightValue = 0; //frontRightEngine.stop();
+		*leftValue = 0;
+		*rightValue = 0;
 	}
 }
 
@@ -121,7 +121,6 @@ int main() {
 
 		double flv, frv;
 		calculateEngineValues(accController, dirController, &flv, &frv);
-
 		frontLeftEngine.drive(flv);
 		frontRightEngine.drive(frv);
 	}

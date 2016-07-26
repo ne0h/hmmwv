@@ -1,4 +1,5 @@
 #include "engine.hpp"
+#include <iostream>
 
 Engine::Engine(GPIO *gpio, const GPIO::Pin directionPin, const GPIO::PwmPin speedPin) :
 	_gpio(gpio),
@@ -31,11 +32,11 @@ void Engine::start(const int direction, const double speed)
 }
 
 void Engine::forward(const double speed) {
-	start(1, speed);
+	start(0, speed);
 }
 
 void Engine::backward(const double speed) {
-	start(0, speed);
+	start(1, speed);
 }
 
 void Engine::stop() {
@@ -56,7 +57,7 @@ void Engine::drive(const double value) {
 	if (value > 0) {
 		forward(value);
 	} else if (value < 0) {
-		backward(abs(value));
+		backward(fabs(value));
 	} else {
 		stop();
 	}
