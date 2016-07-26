@@ -51,3 +51,13 @@ void Engine::rampDownToStop() {
 	}
 	stop();
 }
+
+void Engine::drive(const double value) {
+	if (value > 0) {
+		forward(value);
+	} else if (value < 0) {
+		backward(abs(value));
+	} else {
+		stop();
+	}
+}

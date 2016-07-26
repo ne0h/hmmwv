@@ -20,6 +20,73 @@ const double PWM_DUTYMAX = 0.99;
 Joystick joystick;
 GPIO gpio;
 
+void calculateEngineValues(double accController, double dirController, double *leftValue, double *rightValue) {
+
+	if (abs(accController) > AXIS_THRS || abs(dirController) > AXIS_THRS) {
+
+		// drive forward
+		if (accController >= 0.0) {
+				
+			const double value = (accController == 0.0) ? 0.99 : 0.99 * accController;
+			if (dirController == -0.99) {
+				*leftValue  = value; //frontLeftEngine.forward(value);
+				*rightValue = value * (-1); //frontRightEngine.backward(value);
+				return;
+			} else if (dirController == 0.99) {
+				*leftValue  = value * (-1); //frontLeftEngine.backward(value);
+				*rightValue = value; //frontRightEngine.forward(value);
+				return;
+			}
+
+			if (abs(dirController) < AXIS_THRS) {
+				*leftValue  = accController; //frontLeftEngine.forward(accController);
+				*rightValue = accController; //frontRightEngine.forward(accController);
+			} else {
+				// drive forward left
+				if (dirController < 0.0) {
+					*leftValue  = accController; //frontLeftEngine.forward(accController);
+					*rightValue = (-1) * (1 - abs(accController)); //frontRightEngine.backward(1 - abs(accController));
+				// drive forward right
+				} else {
+					*leftValue  = 1 - abs(accController); //frontLeftEngine.forward(1 - abs(accController));
+					*rightValue = (-1) * accController; //frontRightEngine.backward(accController);
+				}
+			}
+		} else {
+
+			// backwards
+			const double value = (accController == 0.0) ? 0.99 : 0.99 * accController;
+			if (dirController == -0.99) {
+				*leftValue  = (-1) * value; //frontLeftEngine.backward(value);
+				*rightValue = value; //frontRightEngine.forward(value);
+				return;
+			} else if (dirController == 0.99) {
+				*leftValue = value; //frontLeftEngine.forward(value);
+				*rightValue = (-1) * value; //frontRightEngine.backward(value);
+				return;
+			}
+
+			if (abs(dirController) < AXIS_THRS) {
+				*leftValue  = (-1) * (abs(accController)); //frontLeftEngine.backward(abs(accController));
+				*rightValue = (-1) * (abs(accController)); //frontRightEngine.backward(abs(accController));
+			} else {
+				// drive forward left
+				if (dirController < 0.0) {
+					*leftValue  = (-1) * accController; //frontLeftEngine.backward(accController);
+					*rightValue = 1 - abs(accController); //frontRightEngine.forward(1 - abs(accController));
+				// drive forward right
+				} else {
+					*leftValue  = (-1) * (1 - abs(accController)); //frontLeftEngine.backward(1 - abs(accController));
+					*rightValue = accController; //frontRightEngine.forward(accController);
+				}
+			}
+		}
+	} else {
+		leftValue = 0; //frontLeftEngine.stop();
+		rightValue = 0; //frontRightEngine.stop();
+	}
+}
+
 int main() {
 
 	if (!joystick.init()) {
@@ -52,91 +119,11 @@ int main() {
 		if (dirController >  PWM_DUTYMAX) dirController =  PWM_DUTYMAX;
 		if (dirController < -1.0 * PWM_DUTYMAX) dirController = -1.0 * PWM_DUTYMAX;
 
-		if (abs(accController) > AXIS_THRS || abs(dirController) > AXIS_THRS) {
+		double flv, frv;
+		calculateEngineValues(accController, dirController, &flv, &frv);
 
-			// drive forward
-			if (accController >= 0.0) {
-				
-				const double value = (accController == 0.0) ? 0.99 : 0.99 * accController;
-				if (dirController == -0.99) {
-					frontLeftEngine.forward(value);
-					frontRightEngine.backward(value);
-					backLeftEngine.forward(value);
-					backRightEngine.backward(value);
-					continue;
-				} else if (dirController == 0.99) {
-					frontLeftEngine.backward(value);
-					frontRightEngine.forward(value);
-					backLeftEngine.backward(value);
-					backRightEngine.forward(value);
-					continue;
-				}
-
-				if (abs(dirController) < AXIS_THRS) {
-					frontLeftEngine.forward(accController);
-					frontRightEngine.forward(accController);
-					backLeftEngine.forward(accController);
-					backRightEngine.forward(accController);
-				} else {
-					// drive forward left
-					if (dirController < 0.0) {
-						frontLeftEngine.forward(accController);
-						frontRightEngine.backward(1 - abs(accController));
-						backLeftEngine.forward(accController);
-						backRightEngine.backward(1 - abs(accController));
-					// drive forward right
-					} else {
-						frontLeftEngine.forward(1 - abs(accController));
-						frontRightEngine.backward(accController);
-						backLeftEngine.forward(1 - abs(accController));
-						backRightEngine.backward(accController);
-					}
-				}
-			} else {
-
-				// backwards
-				const double value = (accController == 0.0) ? 0.99 : 0.99 * accController;
-				if (dirController == -0.99) {
-					frontLeftEngine.backward(value);
-					frontRightEngine.forward(value);
-					backLeftEngine.backward(value);
-					backRightEngine.forward(value);
-					continue;
-				} else if (dirController == 0.99) {
-					frontLeftEngine.forward(value);
-					frontRightEngine.backward(value);
-					backLeftEngine.forward(value);
-					backRightEngine.backward(value);
-					continue;
-				}
-
-				if (abs(dirController) < AXIS_THRS) {
-					frontLeftEngine.backward(abs(accController));
-					frontRightEngine.backward(abs(accController));
-					backLeftEngine.backward(abs(accController));
-					backRightEngine.backward(abs(accController));
-				} else {
-					// drive forward left
-					if (dirController < 0.0) {
-						frontLeftEngine.backward(accController);
-						frontRightEngine.forward(1 - abs(accController));
-						backLeftEngine.backward(accController);
-						backRightEngine.forward(1 - abs(accController));
-					// drive forward right
-					} else {
-						frontLeftEngine.backward(1 - abs(accController));
-						frontRightEngine.forward(accController);
-						backLeftEngine.backward(1 - abs(accController));
-						backRightEngine.forward(accController);
-					}
-				}
-			}
-		} else {
-			frontLeftEngine.stop();
-			frontRightEngine.stop();
-			backLeftEngine.stop();
-			backRightEngine.stop();
-		}
+		frontLeftEngine.drive(flv);
+		frontRightEngine.drive(frv);
 	}
 
 	return 0;

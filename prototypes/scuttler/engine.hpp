@@ -20,6 +20,7 @@ public:
 	void start(const int direction, const double speed = 0.0f);
 	void forward(const double speed = 0.0f);
 	void backward(const double speed = 0.0f);
+	void drive(const double value = 0);
 	void stop();
 
 private:
