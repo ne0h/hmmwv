@@ -96,11 +96,17 @@ int main() {
 
 	const string name = joystick.getName();
 	cout << "Used controller: " << name.c_str() << endl;
-
-	Engine frontLeftEngine (&gpio, GPIO::P8_08, GPIO::P8_13);
-	Engine frontRightEngine(&gpio, GPIO::P8_10, GPIO::P8_19);
-	Engine backLeftEngine  (&gpio, GPIO::P9_17, GPIO::P9_14);
-	Engine backRightEngine (&gpio, GPIO::P9_18, GPIO::P9_16);
+	
+	//							   direction    speed
+	Engine frontLeftEngine (&gpio, GPIO::P9_23, GPIO::P9_14);
+	Engine frontRightEngine(&gpio, GPIO::P9_24, GPIO::P9_16);
+	Engine backLeftEngine  (&gpio, GPIO::P8_08, GPIO::P8_13);
+	Engine backRightEngine (&gpio, GPIO::P8_10, GPIO::P8_19);
+	
+	frontLeftEngine.stop();
+	frontRightEngine.stop();
+	backLeftEngine.stop();
+	backRightEngine.stop();
 
 	bool run = true;
 	while(run) {
@@ -112,17 +118,37 @@ int main() {
 			run = false;
 		}
 
-		double accController  = (-1.0) * axis.at(1) / AXIS_MAX;
-		if (accController >  PWM_DUTYMAX) accController =  PWM_DUTYMAX;
-		if (accController < -1.0 * PWM_DUTYMAX) accController = -1.0 * PWM_DUTYMAX;
-		double dirController  =  axis.at(0) / AXIS_MAX;
-		if (dirController >  PWM_DUTYMAX) dirController =  PWM_DUTYMAX;
-		if (dirController < -1.0 * PWM_DUTYMAX) dirController = -1.0 * PWM_DUTYMAX;
+		/**
+		 * front engines
+		 */
 
-		double flv, frv;
-		calculateEngineValues(accController, dirController, &flv, &frv);
-		frontLeftEngine.drive(flv);
-		frontRightEngine.drive(frv);
+		double frontAccController  = (-1.0) * axis.at(1) / AXIS_MAX;
+		if (frontAccController >  PWM_DUTYMAX)       frontAccController =  PWM_DUTYMAX;
+		if (frontAccController < -1.0 * PWM_DUTYMAX) frontAccController = -1.0 * PWM_DUTYMAX;
+		double frontDirController  =  axis.at(0) / AXIS_MAX;
+		if (frontDirController >  PWM_DUTYMAX)       frontDirController =  PWM_DUTYMAX;
+		if (frontDirController < -1.0 * PWM_DUTYMAX) frontDirController = -1.0 * PWM_DUTYMAX;
+
+		double fflv, ffrv;
+		calculateEngineValues(frontAccController, frontDirController, &fflv, &ffrv);
+		frontLeftEngine.drive(fflv);
+		frontRightEngine.drive(ffrv);
+		
+		/**
+		 * back engines
+		 */
+		 
+		double backAccController  = (-1.0) * axis.at(3) / AXIS_MAX;
+		if (backAccController >  PWM_DUTYMAX)       backAccController =  PWM_DUTYMAX;
+		if (backAccController < -1.0 * PWM_DUTYMAX) backAccController = -1.0 * PWM_DUTYMAX;
+		double backDirController  =  axis.at(2) / AXIS_MAX;
+		if (backDirController >  PWM_DUTYMAX)       backDirController =  PWM_DUTYMAX;
+		if (backDirController < -1.0 * PWM_DUTYMAX) backDirController = -1.0 * PWM_DUTYMAX;
+
+		double bflv, bfrv;
+		calculateEngineValues(backAccController, backDirController, &bflv, &bfrv);
+		backLeftEngine.drive(bflv);
+		backRightEngine.drive(bfrv);
 	}
 
 	return 0;
