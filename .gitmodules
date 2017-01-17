@@ -4,3 +4,6 @@
 [submodule "hector_slam"]
 	path = hector_slam
 	url = git@github.com:ne0h/hector_slam.git
+[submodule "arduino_workspace/arduino-core"]
+	path = arduino_workspace/arduino-core
+	url = https://github.com/ne0h/arduino-core.git
