@@ -140,7 +140,7 @@ TODO: Node-Diagramm Turtlebot
 \subsection{Ansatz 2: Erkennen von Treppen mittels vertikalen Flächen}
 \begin{frame}{Ansatz 2: Erkennen von Treppen mittels vertikalen Flächen}
 \begin{itemize}
-	\item Eingabe: dreidimensionale Punktwolke
+	\item Eingabe: zwei-dimensionale Punktwolke
 	\item Verwendung des RANSAC-Algorithmus zur Ermittlung von Flächen (dazu gleich mehr)
 	\item \dots
 \end{itemize}
@@ -161,7 +161,7 @@ TODO: Node-Diagramm Turtlebot
 \begin{frame}{Implementierung}
 \begin{itemize}
 	\item ROS Node
-	\item C++
+	\item C++, PCL
 	\item Einführen eines Ebenen-Formats
 	\item Import-/Export-Funktion
 	\item \dots
@@ -177,7 +177,36 @@ TODO: Node-Diagramm Turtlebot
 \end{frame}
 
 \begin{frame}{Implementierung im Detail}
-Diverse Bilder mit Zwischenergebnissen
+\begin{itemize}
+	\item Nach Anwendung von \texttt{RANSAC}: Erkennen von senkrechten Flächen
+\end{itemize}
+\begin{center}
+	\includegraphics[scale=0.16]{images/ransac01.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}{Implementierung im Detail}
+\begin{itemize}
+	\item Höhenfilter
+\end{itemize}
+\begin{center}
+	\includegraphics[scale=0.16]{images/ransac02.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}{Implementierung im Detail}
+\begin{itemize}
+	\item Treppenbauen
+\end{itemize}
+\begin{center}
+	\includegraphics[scale=0.16]{images/ransac03.pdf}
+\end{center}
+\end{frame}
+
+\begin{frame}{Speicherformat für Import/Export}
+\begin{itemize}
+	\item Treppenbauen
+\end{itemize}
 \end{frame}
 
 
