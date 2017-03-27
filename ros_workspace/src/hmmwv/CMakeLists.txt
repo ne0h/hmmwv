@@ -56,12 +56,9 @@ find_package(catkin REQUIRED COMPONENTS
 #)
 
 ## Generate services in the 'srv' folder
-add_service_files(
-		FILES
-		ExportStairways.srv
-		ImportStairways.srv
-		ClearStairways.srv
-)
+#add_service_files(
+#		FILES
+#)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -121,11 +118,6 @@ include_directories(
 # target_link_libraries(hmmwv_node
 #   ${catkin_LIBRARIES}
 # )
-
-add_executable(stairwaydetector
-	src/stairwaydetector.cpp
-)
-target_link_libraries(stairwaydetector ${catkin_LIBRARIES} yaml-cpp)
 
 add_executable(remotecontrol
 	src/remotecontrol.cpp
