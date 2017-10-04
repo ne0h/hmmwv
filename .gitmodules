@@ -7,3 +7,6 @@
 [submodule "arduino_workspace/arduino-core"]
 	path = arduino_workspace/arduino-core
 	url = https://github.com/ne0h/arduino-core.git
+[submodule "ros_stairsdetection"]
+	path = ros_stairsdetection
+	url = git@github.com:ne0h/ros_stairsdetection.git
