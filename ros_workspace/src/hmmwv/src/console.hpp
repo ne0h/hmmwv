@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 #include <cstdio>
 
 class Console {
@@ -20,25 +21,33 @@ public:
         }
 
         struct termios settings;
-        tcgetattr(m_tty, &settings);
-        cfsetospeed(&settings, B115200);
-        cfsetispeed(&settings, B0);
+        if (tcgetattr(m_tty, &settings) < 0) {
+            perror("failed to get terminal attributes");
+        }
+
+        cfsetospeed(&settings, 57600);
+        cfsetispeed(&settings, 57600);
+
         settings.c_cflag &= ~PARENB;	                        // no parity
         settings.c_cflag &= ~CSTOPB;	                        // one stop bit
         settings.c_cflag &= ~CSIZE;		                        // 8 bits per character
         settings.c_cflag |= CS8;
+
         settings.c_cflag &= ~CRTSCTS;	                        // Disable hardware flow control
-        settings.c_cflag |= CREAD;		                        // Enable receiver
-        settings.c_iflag &= ~(IXON | IXOFF | IXANY);            // Disable start/stop I/O control
-        settings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);    // Disable user terminal features
-        settings.c_oflag &= ~OPOST;		                        // Disable output postprocessing
+
+        settings.c_cflag |= CREAD | CLOCAL;                     // Enable receiver and ignore ctrl lines
+        settings.c_iflag &= ~(IXON | IXOFF | IXANY);            // Disable software flow control
+
+        settings.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);    // Disable user terminal features, make raw
+        settings.c_oflag &= ~OPOST;		                        // Disable output postprocessing, make raw
+
         settings.c_cc[VMIN]  = 0;
         settings.c_cc[VTIME] = 0;
-        if (tcsetattr(m_tty, TCSANOW, &settings) != 0) {
-            perror("tcsetattr");
-            printf("1\n");
+
+        tcsetattr(m_tty, TCSANOW, &settings); 
+        if (tcsetattr(m_tty, TCSAFLUSH, &settings) < 0) {
+            perror("failed to set tcsetattr");
         }
-        tcflush(m_tty, TCOFLUSH);
     }
 
     ~Console() {

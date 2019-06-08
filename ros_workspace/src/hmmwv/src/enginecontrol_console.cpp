@@ -2,7 +2,6 @@
 #include <sstream>
 
 #include "console.hpp"
-#include "enginecontrol_common.hpp"
 
 int main(int argc, char *argv[]) {
 
