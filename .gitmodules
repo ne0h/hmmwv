@@ -7,3 +7,6 @@
 [submodule "ros_stairsdetection"]
 	path = ros_stairsdetection
 	url = git@github.com:ne0h/ros_stairsdetection.git
+[submodule "enginecontrol/libATmega328"]
+	path = enginecontrol/libATmega328
+	url = https://github.com/ne0h/libAtmega328.git

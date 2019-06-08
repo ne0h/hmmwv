@@ -6,3 +6,4 @@ ros_workspace/devel_isolated/
 
 *DS_Store
 .idea/
+.vscode/
