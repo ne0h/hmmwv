@@ -5,16 +5,21 @@
 #include <ssd1306.hpp>
 #include <constants.hpp>
 
-#define OLED_LEFT_X         8
-#define OLED_RIGHT_X        13
-#define OLED_READY          4
-#define OLED_STATUS         5
-#define OLED_SPEED          6
-#define OLED_MONITOR        7  
+#define OLED_LEFT_X             8
+#define OLED_RIGHT_X            13
+#define OLED_READY              4
+#define OLED_STATUS             5
+#define OLED_SPEED              6
+#define OLED_MONITOR            7
+
+#define ENGINE_LEFT_READY       PC2
+#define ENGINE_LEFT_ENABLE      PD4
+#define ENGINE_LEFT_SPEED       PD5
+#define ENGINE_LEFT_DIRECTION   PB4
 
 class Engine {
 public:
-    uint8_t ready, status, speed, monitor;
+    uint8_t ready, status, speed, direction, monitor;
     const uint8_t x;
 
     Engine(const uint8_t x) : x(x) {}
@@ -49,12 +54,41 @@ ISR(USART_RX_vect) {
 
     switch (cmd) {
     case CMD_LEFT_STOP:
+        left.status = 0;
+        left.speed = 0;
+        update(left);
         break;
     case CMD_RIGHT_STOP:
+        right.status = 0;
+        right.speed = 0;
+        update(right);
         break;
-    case CMD_LEFT_DRIVE:
+    case CMD_LEFT_DRIVE_CW:
+        left.status = 1;
+        left.speed = c;
+        left.direction = 0;
+
+        PORTD |= (1<<ENGINE_LEFT_ENABLE);
+        PORTB |= (0<<ENGINE_LEFT_DIRECTION);
+        OCR0B = c;
+
+        update(left);
         break;
-    case CMD_RIGHT_DRIVE:
+    case CMD_LEFT_DRIVE_CCW:
+        left.status = 1;
+        left.speed = c;
+        left.direction = 1;
+
+        PORTB |= (1<<ENGINE_LEFT_DIRECTION);
+        PORTD |= (1<<ENGINE_LEFT_ENABLE);
+        OCR0B = c;
+
+        update(left);
+        break;
+    case CMD_RIGHT_DRIVE_CW:
+        right.status = 1;
+        right.speed = c;
+        update(right);
         break;
     }
 
@@ -62,6 +96,18 @@ ISR(USART_RX_vect) {
 }
 
 int main() {
+    DDRB |= (1<<ENGINE_LEFT_DIRECTION);
+    DDRD |= (1<<ENGINE_LEFT_ENABLE) | (1<<ENGINE_LEFT_DIRECTION) | (1<<ENGINE_LEFT_SPEED);
+
+    TCCR0A |= (1<<COM0A1) | (1<<COM0B1);
+    TCCR0A |= (1<<WGM01) | (1<<WGM00);
+    TCCR0B |= (1<<CS01);
+
+    oled.gotoxy(0, 0);
+    if (PINC & (1 << ENGINE_LEFT_READY)) {
+        left.ready = 1;
+    }
+
     oled.gotoxy(2, 0);
     oled.write("Enginecontrol");
 
