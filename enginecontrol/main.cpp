@@ -51,6 +51,8 @@ ISR(USART_RX_vect) {
     uint8_t cmd = lastCmd >> 8;
     oled.gotoxy(0, 2);
     oled.write("0x%4x", lastCmd);
+    oled.gotoxy(0, 3);
+    oled.write("0x%2x", cmd);
 
     switch (cmd) {
     case CMD_LEFT_STOP:
@@ -69,7 +71,7 @@ ISR(USART_RX_vect) {
         left.direction = 0;
 
         PORTD |= (1<<ENGINE_LEFT_ENABLE);
-        PORTB |= (0<<ENGINE_LEFT_DIRECTION);
+        PORTB &= ~(1<<ENGINE_LEFT_DIRECTION);
         OCR0B = c;
 
         update(left);
