@@ -15,18 +15,21 @@ private:
 
 public:
     Console(const std::string tty) {
-        m_tty = open(tty.c_str(), O_RDWR | O_NOCTTY);
+        struct termios settings;
+
+        m_tty = open(tty.c_str(), O_RDWR | O_NONBLOCK);
         if (m_tty < 0) {
             perror("open");
+            exit(EXIT_FAILURE);
         }
 
-        struct termios settings;
         if (tcgetattr(m_tty, &settings) < 0) {
             perror("failed to get terminal attributes");
+            exit(EXIT_FAILURE);
         }
 
-        cfsetospeed(&settings, 57600);
-        cfsetispeed(&settings, 57600);
+        cfsetospeed(&settings, B57600);
+        cfsetispeed(&settings, B57600);
 
         settings.c_cflag &= ~PARENB;	                        // no parity
         settings.c_cflag &= ~CSTOPB;	                        // one stop bit
@@ -47,7 +50,11 @@ public:
         tcsetattr(m_tty, TCSANOW, &settings); 
         if (tcsetattr(m_tty, TCSAFLUSH, &settings) < 0) {
             perror("failed to set tcsetattr");
+            exit(EXIT_FAILURE);
         }
+
+        // wait to seconds to avoid that arduino resets due to enabled DTR
+        sleep(2);
     }
 
     ~Console() {
