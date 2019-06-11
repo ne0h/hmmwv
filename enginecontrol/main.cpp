@@ -4,6 +4,7 @@
 #include <usart.hpp>
 #include <ssd1306.hpp>
 #include <constants.hpp>
+#include <enginecontrol_common.hpp>
 
 #define OLED_LEFT_X             8
 #define OLED_RIGHT_X            13
@@ -16,14 +17,6 @@
 #define ENGINE_LEFT_ENABLE      PD4
 #define ENGINE_LEFT_SPEED       PD5
 #define ENGINE_LEFT_DIRECTION   PB4
-
-class Engine {
-public:
-    uint8_t ready, status, speed, direction, monitor;
-    const uint8_t x;
-
-    Engine(const uint8_t x) : x(x) {}
-};
 
 static AsyncUSART usart;
 SSD1306 oled;

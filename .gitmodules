@@ -10,3 +10,6 @@
 [submodule "enginecontrol/libATmega328"]
 	path = enginecontrol/libATmega328
 	url = https://github.com/ne0h/libAtmega328.git
+[submodule "ros_workspace/src/hmmwv/src/gamepad"]
+	path = ros_workspace/src/hmmwv/src/gamepad
+	url = https://github.com/ne0h/gamepad.git
