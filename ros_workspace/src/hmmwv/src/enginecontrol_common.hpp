@@ -1,8 +1,14 @@
 #pragma once
 
+const uint8_t   CMD_STOP    = 0;
+const uint8_t   CMD_DRIVE   = 1;
+
 enum Direction {
-    CW,
-    CCW,
+    CW, CCW
+};
+
+enum EngineId {
+    ENGINE_LEFT, ENGINE_RIGHT
 };
 
 struct cmd {

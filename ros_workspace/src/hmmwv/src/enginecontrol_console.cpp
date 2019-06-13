@@ -1,24 +1,41 @@
 #include <iostream>
-#include <sstream>
+#include <cmath>
 
 #include "console.hpp"
+#include "constants.hpp"
+#include "enginecontrol_common.hpp"
+#include <gamepad.hpp>
 
-int main(int argc, char *argv[]) {
+Console console("/dev/cu.wchusbserial1420");
 
-    if (argc < 2) {
-        std::cerr << "You have to provide a command as argument" << std::endl;
-        exit(EXIT_FAILURE);
+void cb(gamepad::Event &event) {
+    auto axis = event.getAxis();
+
+    uint8_t speed = (uint8_t)(abs(axis[1]) * 255 / 32768);
+    if (abs(axis[1]) < 5000) {
+        speed = 0;
     }
 
-    // read input
-    uint16_t cmd;   
-    std::stringstream ss;
-    ss << std::hex << argv[1];
-    ss >> cmd;
+    uint8_t direction;
+    if (axis[1] > 0) {
+        direction = CCW;
+    } else {
+        direction = CW;
+    }
+    struct cmd cmd = {
+        1, ENGINE_LEFT, direction, speed
+    };
 
-    Console console("/dev/cu.wchusbserial1420");
-    ssize_t result = console.send(cmd);
-    std::cout << "Send " << result << " bytes" << std::endl;
+    uint8_t buf[2];
+    marshal(&cmd, buf);
+    console.send(buf, 2);
+}
 
+int main(int argc, char *argv[]) {
+    gamepad::Gamepad gamepad;
+    gamepad.addCallback(cb);
+
+    std::cin.ignore();
+    console.send((uint16_t)0);
     return 0;
 }

@@ -65,7 +65,6 @@ public:
         unsigned char buf[2];
         buf[0] = cmd >> 8;
         buf[1] = cmd;
-        printf("0x%x, 0x%x\n", buf[0], buf[1]);
         return send(buf, 2);
     }
 
